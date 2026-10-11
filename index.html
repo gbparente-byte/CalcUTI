@@ -1,1192 +1,708 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Calculadora UTI V19.1 - RHP</title>
-    
-    <!-- Tailwind CSS para Estilização -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap');
-        
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #0f172a; /* slate-900 */
-            color: #f1f5f9; /* slate-100 */
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        .font-mono {
-            font-family: 'JetBrains Mono', monospace;
-        }
-
-        /* Custom Scrollbar */
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #1e293b; border-radius: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #64748b; }
-
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-
-        /* Sliders */
-        input[type=range] {
-            -webkit-appearance: none;
-            width: 100%;
-            background: transparent;
-        }
-        input[type=range]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            height: 18px;
-            width: 18px;
-            border-radius: 50%;
-            background: #ffffff;
-            cursor: pointer;
-            margin-top: -6px;
-            box-shadow: 0 0 4px rgba(0,0,0,0.5);
-        }
-        input[type=range]::-webkit-slider-runnable-track {
-            width: 100%;
-            height: 6px;
-            cursor: pointer;
-            border-radius: 3px;
-        }
-        
-        .accent-cyan-500::-webkit-slider-runnable-track { background: #334155; }
-        .accent-cyan-500::-webkit-slider-thumb { background: #06b6d4; }
-        .accent-blue-500::-webkit-slider-runnable-track { background: #1e3a8a; }
-        .accent-blue-500::-webkit-slider-thumb { background: #3b82f6; }
-        .accent-emerald-500::-webkit-slider-runnable-track { background: #064e3b; }
-        .accent-emerald-500::-webkit-slider-thumb { background: #10b981; }
-        .accent-amber-500::-webkit-slider-runnable-track { background: #78350f; }
-        .accent-amber-500::-webkit-slider-thumb { background: #f59e0b; }
-        .accent-red-600::-webkit-slider-runnable-track { background: #7f1d1d; }
-        .accent-red-600::-webkit-slider-thumb { background: #dc2626; }
-        .accent-rose-500::-webkit-slider-runnable-track { background: #881337; }
-        .accent-rose-500::-webkit-slider-thumb { background: #f43f5e; }
-
-        /* Animações globais */
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
-        .animate-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Calculadora UTI V19.3 - RHP</title>
+<!-- Tailwind CSS (Apenas para estilos visuais) -->
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+body {
+font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+background-color: #0f172a;
+color: #f1f5f9;
+-webkit-tap-highlight-color: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: #1e293b; border-radius: 4px; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #64748b; }
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+input[type=range] {
+-webkit-appearance: none;
+width: 100%;
+background: transparent;
+}
+input[type=range]::-webkit-slider-thumb {
+-webkit-appearance: none;
+height: 18px;
+width: 18px;
+border-radius: 50%;
+background: #ffffff;
+cursor: pointer;
+margin-top: -6px;
+box-shadow: 0 0 4px rgba(0,0,0,0.5);
+}
+input[type=range]::-webkit-slider-runnable-track {
+width: 100%;
+height: 6px;
+cursor: pointer;
+border-radius: 3px;
+background: #334155;
+}
+</style>
 </head>
-<body class="selection:bg-cyan-500/30 flex flex-col h-screen overflow-y-auto custom-scrollbar">
-
-    <div id="root"></div>
-
-    <!-- Bibliotecas React e Babel via CDN para rodar direto no HTML -->
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
-
-    <script type="text/babel">
-        const { useState, useEffect, useRef } = React;
-
-        // Mock dos Ícones do Lucide-React para funcionar em HTML sem npm install
-        const Icon = ({ path, className, size = 24 }) => (
-            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} dangerouslySetInnerHTML={{__html: path}} />
-        );
-
-        const Activity = (p) => <Icon {...p} path="<polyline points='22 12 18 12 15 21 9 3 6 12 2 12'/>" />;
-        const Pill = (p) => <Icon {...p} path="<path d='m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z'/><path d='m16.5 3.5-7 7'/>" />;
-        const Calculator = (p) => <Icon {...p} path="<rect width='16' height='20' x='4' y='2' rx='2'/><line x1='8' x2='16' y1='6' y2='6'/><line x1='16' x2='16' y1='14' y2='18'/><path d='M16 10h.01'/><path d='M12 10h.01'/><path d='M8 10h.01'/><path d='M12 14h.01'/><path d='M8 14h.01'/><path d='M12 18h.01'/><path d='M8 18h.01'/>" />;
-        const X = (p) => <Icon {...p} path="<path d='M18 6 6 18'/><path d='m6 6 12 12'/>" />;
-        const Droplet = (p) => <Icon {...p} path="<path d='M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z'/>" />;
-        const Zap = (p) => <Icon {...p} path="<polygon points='13 2 3 14 12 14 11 22 21 10 12 10 13 2'/>" />;
-        const AlertTriangle = (p) => <Icon {...p} path="<path d='m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z'/><path d='M12 9v4'/><path d='M12 17h.01'/>" />;
-        const Info = (p) => <Icon {...p} path="<circle cx='12' cy='12' r='10'/><path d='M12 16v-4'/><path d='M12 8h.01'/>" />;
-        const AlertOctagon = (p) => <Icon {...p} path="<polygon points='7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2'/><line x1='12' x2='12' y1='8' y2='12'/><line x1='12' x2='12.01' y1='16' y2='16'/>" />;
-        const RefreshCcw = (p) => <Icon {...p} path="<path d='M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8'/><path d='M3 3v5h5'/><path d='M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16'/><path d='M16 21v-5h5'/>" />;
-        const Filter = (p) => <Icon {...p} path="<polygon points='22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3'/>" />;
-        const Syringe = (p) => <Icon {...p} path="<path d='m18 2 4 4'/><path d='m17 7 3-3'/><path d='M19 9 8.7 19.3c-1 1-2.5 1-3.4 0l-.6-.6c-1-1-1-2.5 0-3.4L15 5'/><path d='m9 11 4 4'/><path d='m5 19-3 3'/><path d='m14 4 6 6'/>" />;
-        const ChevronRight = (p) => <Icon {...p} path="<path d='m9 18 6-6-6-6'/>" />;
-        const Wind = (p) => <Icon {...p} path="<path d='M12.8 19.6A2 2 0 1 0 14 16H2'/><path d='M17.5 8a2.5 2.5 0 1 1 2 4H2'/><path d='M9.8 4.4A2 2 0 1 1 11 8H2'/>" />;
-        const Beaker = (p) => <Icon {...p} path="<path d='M4.5 3h15'/><path d='M6 3v16a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V3'/><path d='M6 14h12'/>" />;
-        const Waves = (p) => <Icon {...p} path="<path d='M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1'/><path d='M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1'/><path d='M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1'/>" />;
-
-        const drogasVasoativas = [
-        { 
-            id: 'noradrenalina', nome: 'Noradrenalina', classe: 'VASOPRESSOR', unidade: 'mcg/kg/min', 
-            min: 0.01, max: 2, step: 0.01, padrao: 0.1, limites: [0.1, 0.5, 1.0], botoes: [0.05, 0.1, 0.3, 0.5],
-            diluicoes: {
-            simples: { nome: 'Simples', texto: '4 amp (16mg) + 234 mL SG 5%', conc: 64, via: 'CVC Preferencial' },
-            rhp: { nome: 'RHP', texto: '5 amp (4mL - 1mg/mL) + 180 mL SF 0.9%', conc: 100, via: 'CVC Obrigatório' }
-            },
-            alertas: [
-            { doseMin: 0.3, tipo: 'warning', texto: 'Suspender dieta entérica (Risco de isquemia mesentérica).' },
-            { doseMin: 0.5, tipo: 'danger', texto: 'Dose elevada. Considerar resgate (Vasopressina).' },
-            { doseMin: 1.0, tipo: 'critical', texto: 'Choque refratário. Risco iminente de necrose digital.' }
-            ]
-        },
-        { 
-            id: 'adrenalina', nome: 'Adrenalina', classe: 'VASOPRESSOR', unidade: 'mcg/kg/min', 
-            min: 0.01, max: 0.5, step: 0.01, padrao: 0.05, limites: [0.05, 0.1, 0.3], botoes: [0.02, 0.05, 0.1, 0.2],
-            diluicoes: {
-            simples: { nome: 'Simples', texto: '6 amp (6mg) + 94 mL SF 0.9%', conc: 60, via: 'CVC Preferencial' },
-            rhp: { nome: 'RHP', texto: '10 amp (10mg) + 90 mL SF 0.9%', conc: 100, via: 'CVC Obrigatório' }
-            },
-            alertas: [
-            { doseMin: 0.1, tipo: 'warning', texto: 'Efeito agonista Alfa predomina. Risco de hiperlactatemia isquêmica.' }
-            ]
-        },
-        { 
-            id: 'vasopressina', nome: 'Vasopressina', classe: 'VASOPRESSOR', unidade: 'UI/min', 
-            min: 0.01, max: 0.06, step: 0.005, padrao: 0.03, limites: [0.03, 0.04, 0.05], botoes: [0.03, 0.04],
-            diluicoes: {
-            simples: { nome: 'Simples', texto: '1 amp (20UI) + 100 mL SF 0.9%', conc: 0.2, via: 'CVC' },
-            conc: { nome: 'Conc.', texto: '2 amp (40UI) + 100 mL SF 0.9%', conc: 0.4, via: 'CVC' }
-            },
-            alertas: [
-            { doseMin: 0.041, tipo: 'danger', texto: 'Doses > 0.04 UI/min aumentam risco de isquemia miocárdica/intestinal.' }
-            ]
-        },
-        { 
-            id: 'dopamina', nome: 'Dopamina', classe: 'VASOPRESSOR', unidade: 'mcg/kg/min', 
-            min: 1, max: 20, step: 0.5, padrao: 5.0, limites: [5.0, 10.0, 15.0], botoes: [2.5, 5.0, 10.0, 15.0],
-            diluicoes: {
-            simples: { nome: 'Simples', texto: '5 amp (250mg) + 200 mL SG 5%', conc: 1000, via: 'CVC' },
-            rhp: { nome: 'RHP', texto: '10 amp (500mg) + 150 mL SF 0.9%', conc: 2000, via: 'CVC' }
-            },
-            alertas: [
-            { doseMin: 10.0, tipo: 'danger', texto: 'Efeito Alfa predominante. Elevado risco de taquiarritmias.' }
-            ]
-        },
-        { 
-            id: 'nitroglicerina', nome: 'Nitroglicerina (Tridil)', classe: 'VASODILATADOR', unidade: 'mcg/min', 
-            min: 5, max: 200, step: 5, padrao: 10, limites: [20, 50, 100], botoes: [10, 20, 50, 100],
-            diluicoes: {
-            simples: { nome: 'Padrão', texto: '1 amp (50mg) + 240 mL SG 5%', conc: 200, via: 'AVP / CVC' }
-            },
-            alertas: [
-            { doseMin: 0.0, tipo: 'info', texto: 'Dose independente do peso (mcg/min). Titular conforme PA.' },
-            { doseMin: 100.0, tipo: 'warning', texto: 'Doses altas. Considerar tolerância medicamentosa (taquifilaxia) se uso > 24h.' }
-            ]
-        },
-        { 
-            id: 'nipride', nome: 'Nitroprussiato', classe: 'VASODILATADOR', unidade: 'mcg/kg/min', 
-            min: 0.1, max: 10, step: 0.1, padrao: 2.0, limites: [2.0, 5.0, 8.0], botoes: [0.5, 2.0, 5.0, 10.0],
-            diluicoes: {
-            simples: { nome: 'Padrão', texto: '1 amp (50mg) + 248 mL SG 5%', conc: 200, via: 'CVC' }
-            },
-            alertas: [
-            { doseMin: 2.0, tipo: 'warning', texto: 'Risco de toxicidade por cianeto. Monitorizar gasometria.' },
-            { doseMin: 9.0, tipo: 'danger', texto: 'Dose teto permitida por no máximo 10 minutos.' }
-            ]
-        },
-        { 
-            id: 'azulmetileno', nome: 'Azul de Metileno 1%', classe: 'VASOPRESSOR / RESGATE', unidade: 'fixa', 
-            min: 1, max: 1, step: 1, padrao: 1, limites: [0, 2, 3], botoes: [],
-            diluicoes: {
-            simples: { nome: 'Padrão RHP', texto: '2 amp (1%) + 500 mL SF 0.9%', conc: 0, via: 'AVP / CVC' }
-            },
-            alertas: [
-            { doseMin: 0.0, tipo: 'info', texto: 'Infusão Única e Fixa: Independe do peso.' },
-            { doseMin: 0.0, tipo: 'warning', texto: 'Correr a solução em BIC por 6 horas (1x ao dia).' }
-            ]
-        }
-        ];
-
-        const inotropicos = [
-        { 
-            id: 'dobutamina', nome: 'Dobutamina', classe: 'INOTRÓPICO', unidade: 'mcg/kg/min', 
-            min: 1, max: 20, step: 0.5, padrao: 5.0, limites: [5.0, 10.0, 15.0], botoes: [2.5, 5.0, 10.0, 15.0],
-            diluicoes: {
-            simples: { nome: 'Simples', texto: '1 amp (250mg) + 230 mL SG 5%', conc: 1000, via: 'AVP / CVC' },
-            rhp: { nome: 'RHP', texto: '2 amp (500mg) + 210 mL SG 5%', conc: 2000, via: 'CVC Preferencial' },
-            conc: { nome: 'Concentrado', texto: '2 amp (500mg) + 100 mL SG 5%', conc: 3571.4, via: 'CVC Obrigatório' }
-            },
-            alertas: [
-            { doseMin: 15.0, tipo: 'danger', texto: 'Benefício atinge platô. Risco excessivo de isquemia miocárdica.' }
-            ]
-        },
-        { 
-            id: 'milrinona', nome: 'Milrinona', classe: 'INOTRÓPICO / VASODILATADOR', unidade: 'mcg/kg/min', 
-            min: 0.1, max: 2.5, step: 0.01, padrao: 0.5, limites: [0.375, 0.75, 2.5], botoes: [0.25, 0.5, 0.75, 2.5],
-            diluicoes: {
-            simples: { nome: 'Padrão', texto: '2 amp (20mg) + 80 mL SF 0.9%', conc: 200, via: 'AVP / CVC' }
-            },
-            alertas: [
-            { doseMin: 0.0, tipo: 'info', texto: 'Ajuste Renal (ClCr < 30): Iniciar com 0.25 mcg/kg/min.' },
-            { doseMin: 0.76, tipo: 'danger', texto: 'Doses elevadas (>0.75) aumentam risco de arritmias ventriculares.' }
-            ]
-        },
-        { 
-            id: 'levo', nome: 'Levosimendana', classe: 'SENSIBILIZADOR CÁLCIO', unidade: 'mcg/kg/min', 
-            min: 0.05, max: 0.2, step: 0.01, padrao: 0.1, limites: [0.1, 0.15, 0.18], botoes: [0.05, 0.1, 0.2],
-            diluicoes: {
-            simples: { nome: 'Padrão', texto: '1 amp (12.5mg) + 500 mL SG 5%', conc: 25, via: 'AVP / CVC' }
-            },
-            alertas: [
-            { doseMin: 0.0, tipo: 'info', texto: 'Dose Padrão: 0.1 (24% do peso em mL/h). Manter por 24h.' },
-            { doseMin: 0.2, tipo: 'danger', texto: 'Dose máxima. Risco de hipotensão profunda (meia-vida de 80h).' }
-            ]
-        },
-        { 
-            id: 'deslanosideo', nome: 'Deslanosídeo (Cedilanide)', classe: 'INOTRÓPICO', unidade: 'mg/dia', 
-            min: 0.2, max: 2.0, step: 0.2, padrao: 0.6, limites: [0.6, 1.2, 1.6], botoes: [0.4, 0.6, 1.0, 1.6],
-            diluicoes: {
-            simples: { nome: 'Padrão', texto: 'Ampola 0,2mg/mL (2mL). EV direta ou IM.', conc: 0.2, via: 'AVP / IM' }
-            },
-            alertas: [
-            { doseMin: 0.0, tipo: 'info', texto: 'Ajuste Renal: Reduzir dose na mesma porcentagem de queda do ClCr.' },
-            { doseMin: 0.8, tipo: 'warning', texto: 'Digitalização rápida (1.6mg máx fracionado). Manutenção: 0.2 a 0.6 mg/dia.' },
-            { doseMin: 2.0, tipo: 'danger', texto: 'Dose máxima (2mg/dia). Alto risco de toxicidade digitálica.' }
-            ]
-        }
-        ];
-
-        const sedoanalgesia = [
-        { 
-            id: 'fentanil', nome: 'Fentanil', classe: 'ANALGESIA', unidade: 'mcg/kg/h', 
-            min: 0.5, max: 10, step: 0.1, padrao: 3.0, limites: [2.0, 5.0, 8.0], botoes: [1.0, 3.0, 5.0, 10.0],
-            diluicoes: {
-            simples: { nome: 'Simples', texto: '2 amp (1000mcg) + 80 mL SF 0.9%', conc: 20, via: 'AVP / CVC' },
-            rhp: { nome: 'RHP', texto: 'Puro (50 mcg/mL)', conc: 50, via: 'AVP / CVC' }
-            },
-            alertas: [
-            { doseMin: 5.0, tipo: 'warning', texto: 'Meia-vida contexto-sensitiva alta. Risco de íleo paralítico.' }
-            ]
-        },
-        { 
-            id: 'morfina', nome: 'Morfina Injetável', classe: 'ANALGESIA', unidade: 'mg/kg/h', 
-            min: 0.01, max: 0.5, step: 0.01, padrao: 0.05, limites: [0.05, 0.15, 0.3], botoes: [0.05, 0.1, 0.2, 0.5],
-            diluicoes: {
-            simples: { nome: 'Padrão', texto: '2 amp (20mg) + 80 mL SF 0.9%', conc: 0.2, via: 'AVP / CVC' },
-            conc: { nome: 'Conc.', texto: '5 amp (50mg) + 50 mL SF 0.9%', conc: 1.0, via: 'AVP / CVC' }
-            },
-            alertas: [
-            { doseMin: 0.0, tipo: 'info', texto: 'Ajuste Renal: ClCr 10-50 (fazer 75%). ClCr <10 (fazer 50%).' },
-            { doseMin: 0.3, tipo: 'warning', texto: 'Infusão contínua alta. Risco de depressão respiratória.' }
-            ]
-        },
-        { 
-            id: 'midazolam', nome: 'Midazolam', classe: 'SEDAÇÃO', unidade: 'mg/kg/h', 
-            min: 0.05, max: 0.5, step: 0.01, padrao: 0.3, limites: [0.1, 0.3, 0.4], botoes: [0.1, 0.2, 0.3, 0.5],
-            diluicoes: {
-            simples: { nome: 'Simples', texto: '10 amp (150mg) + 120 mL SG 5%', conc: 1, via: 'AVP / CVC' },
-            rhp: { nome: 'RHP', texto: '4 amp (200mg) + 60 mL SF 0.9%', conc: 2, via: 'AVP / CVC' }
-            },
-            alertas: [
-            { doseMin: 0.15, tipo: 'warning', texto: 'Acúmulo de metabólito ativo na disfunção renal/hepática.' }
-            ]
-        },
-        { 
-            id: 'propofol', nome: 'Propofol (Puro)', classe: 'SEDAÇÃO', unidade: 'mg/kg/h', 
-            min: 0.3, max: 4.5, step: 0.1, padrao: 1.5, limites: [1.5, 3.0, 4.0], botoes: [0.5, 1.5, 3.0, 4.0],
-            diluicoes: {
-            simples: { nome: 'Padrão', texto: 'Puro 1% (10 mg/mL)', conc: 10, via: 'CVC Preferencial (Flebite)' }
-            },
-            alertas: [
-            { doseMin: 4.0, tipo: 'danger', texto: 'Risco de Síndrome de Infusão do Propofol (PRIS) se > 48h.' }
-            ]
-        },
-        { 
-            id: 'tiopental', nome: 'Tiopental', classe: 'SEDAÇÃO / NEUROPROTEÇÃO', unidade: 'mg/kg/h', 
-            min: 1, max: 5, step: 0.5, padrao: 2.0, limites: [2.0, 3.0, 4.0], botoes: [1.0, 2.0, 3.0, 5.0],
-            diluicoes: {
-            simples: { nome: 'Padrão', texto: '1 FA (1g) + 100 mL SF 0.9%', conc: 10, via: 'CVC Obrigatório' }
-            },
-            alertas: [
-            { doseMin: 0.0, tipo: 'info', texto: 'Ataque: 3 a 5 mg/kg. Uso frequente em HIC refratária.' },
-            { doseMin: 4.0, tipo: 'danger', texto: 'Risco elevado de hipotensão profunda, imunossupressão e acúmulo no tecido adiposo.' }
-            ]
-        },
-        { 
-            id: 'dexmed', nome: 'Dexmedetomidina', classe: 'SEDAÇÃO LEVE', unidade: 'mcg/kg/h', 
-            min: 0.1, max: 1.5, step: 0.1, padrao: 0.4, limites: [0.4, 0.8, 1.2], botoes: [0.2, 0.4, 0.7, 1.0],
-            diluicoes: {
-            simples: { nome: 'Padrão', texto: '1 amp (200mcg) + 48 mL SF 0.9%', conc: 4, via: 'AVP / CVC' },
-            rhp: { nome: 'RHP', texto: '2 amp (400mcg) + 100 mL SF 0.9%', conc: 4, via: 'AVP / CVC' }
-            },
-            alertas: [
-            { doseMin: 0.0, tipo: 'info', texto: 'Ataque: 1 mcg/kg por 10min (opcional em críticos).' },
-            { doseMin: 0.8, tipo: 'warning', texto: 'Riscos hemodinâmicos superam ganho sedativo. Alta chance de bradicardia.' }
-            ]
-        },
-        { 
-            id: 'cetamina', nome: 'Cetamina', classe: 'ANALGESIA / DISSOCIATIVO', unidade: 'mg/kg/h', 
-            min: 0.1, max: 2.0, step: 0.1, padrao: 0.5, limites: [0.5, 1.0, 1.5], botoes: [0.2, 0.5, 1.0, 1.5],
-            diluicoes: {
-            simples: { nome: 'Padrão', texto: '1 amp (500mg) + 250 mL SF 0.9%', conc: 2, via: 'AVP / CVC' },
-            rhp: { nome: 'RHP', texto: '1 FA (500mg) + 90 mL SF 0.9%', conc: 5, via: 'AVP / CVC' }
-            },
-            alertas: []
-        },
-        { 
-            id: 'atracurio', nome: 'Atracúrio', classe: 'BNM', unidade: 'mg/kg/h', 
-            min: 0.2, max: 1.0, step: 0.1, padrao: 0.4, limites: [0.4, 0.6, 0.8], botoes: [0.3, 0.4, 0.5, 0.6],
-            diluicoes: {
-            simples: { nome: 'Padrão', texto: '4 amp (200mg) + 200 mL SF 0.9%', conc: 1, via: 'AVP / CVC' }
-            },
-            alertas: [
-            { doseMin: 0.0, tipo: 'info', texto: 'Ataque: 0.4 a 0.5 mg/kg. Metabolismo de Hofmann (independe de disfunção orgânica).' },
-            { doseMin: 0.6, tipo: 'warning', texto: 'Assegurar sedação profunda (RASS -5) e monitorização TOF (1 a 2 respostas).' }
-            ]
-        }
-        ];
-
-        const arritmia = [
-        { 
-            id: 'amio_manut', nome: 'Amiodarona (Manutenção)', classe: 'ANTIARRÍTMICO', unidade: 'mg/min', 
-            min: 0.2, max: 1.5, step: 0.1, padrao: 1.0, limites: [0.5, 1.0, 1.2], botoes: [0.5, 1.0],
-            diluicoes: { 
-            simples: { nome: 'Padrão', texto: '6 amp (900mg) + 250 mL SG 5%', conc: 3.6, via: 'CVC Preferencial' },
-            rhp: { nome: 'RHP', texto: '4 amp (600mg) + 250 mL SG 5% (Correr em 24h)', conc: 2.4, via: 'CVC' }
-            },
-            alertas: [
-            { doseMin: 0.0, tipo: 'info', texto: 'Ataque prévio: 150mg em 100mL SG 5% (20-30 min).' },
-            { doseMin: 0.01, tipo: 'info', texto: 'Padrão RHP: Manutenção de 600mg diluídos para correr fixo em 24h.' },
-            { doseMin: 1.0, tipo: 'warning', texto: 'Risco de hipotensão grave (solvente) e bradicardia.' }
-            ]
-        },
-        { 
-            id: 'xilocaina', nome: 'Xilocaína 2% sem Vasoc.', classe: 'ANTIARRÍTMICO', unidade: 'mg/min', 
-            min: 1.0, max: 4.0, step: 0.5, padrao: 2.0, limites: [1.0, 2.0, 3.0], botoes: [1.0, 2.0, 3.0, 4.0],
-            diluicoes: { simples: { nome: 'Padrão', texto: '1 FA (1000mg) + 200 mL SG 5%', conc: 4.0, via: 'AVP / CVC' } },
-            alertas: [
-            { doseMin: 0.0, tipo: 'info', texto: 'Ataque prévio: 1 a 1.5 mg/kg em bolus lento.' },
-            { doseMin: 3.0, tipo: 'warning', texto: 'Dose elevada. Observar toxicidade neurológica (parestesia, convulsão).' },
-            { doseMin: 4.0, tipo: 'danger', texto: 'Evitar uso > 24h sem monitoramento ou ajuste.' }
-            ]
-        },
-        { 
-            id: 'esmolol', nome: 'Esmolol', classe: 'ANTIARRÍTMICO / BB', unidade: 'mcg/kg/min', 
-            min: 50, max: 300, step: 10, padrao: 50, limites: [100, 200, 250], botoes: [50, 100, 200, 300],
-            diluicoes: { simples: { nome: 'Padrão', texto: '1 FA (2,5g) + 240 mL SG 5%', conc: 10000, via: 'CVC Preferencial' } },
-            alertas: [
-            { doseMin: 0.0, tipo: 'info', texto: 'Ataque: 500 mcg/kg em 1 minuto (antes de iniciar manutenção).' },
-            { doseMin: 200.0, tipo: 'warning', texto: 'Monitorização contínua. Alto risco de bradicardia severa e hipotensão induzida.' }
-            ]
-        },
-        { 
-            id: 'magnesio', nome: 'Sulfato de Magnésio 10%', classe: 'ANTIARRÍTMICO / DHE', unidade: 'g/h', 
-            min: 0.5, max: 4.0, step: 0.5, padrao: 1.0, limites: [1.0, 2.0, 3.0], botoes: [0.5, 1.0, 2.0, 4.0],
-            diluicoes: { 
-            conc20: { nome: 'SG 20mg/mL', texto: '2 amp (2g) + 100 mL SG 5%', conc: 0.02, via: 'AVP / CVC' },
-            conc8: { nome: 'SG 8mg/mL', texto: '2 amp (2g) + 250 mL SG 5%', conc: 0.008, via: 'AVP / CVC' }
-            },
-            alertas: [
-            { doseMin: 0.0, tipo: 'info', texto: 'Ajuste Renal: Reduzir em 50%. Não exceder 20g/48h se IR grave.' },
-            { doseMin: 1.5, tipo: 'warning', texto: 'Infusão rápida (Torsades de pointes = 1 a 2g em 15 min).' }
-            ]
-        }
-        ];
-
-        const dhe = [
-        { 
-            id: 'kcl_central', nome: 'Cloreto de Potássio 19,1% (CVC)', classe: 'REPOSIÇÃO K+', unidade: 'mEq/h', 
-            min: 5, max: 40, step: 1, padrao: 10, limites: [10, 20, 30], botoes: [10, 20, 30],
-            diluicoes: { simples: { nome: 'Padrão', texto: '1 amp (25 mEq) + 250 mL SF 0.9%', conc: 0.1, via: 'CVC Exclusivo' } },
-            alertas: [
-            { doseMin: 0.0, tipo: 'info', texto: 'Apenas em CVC e com monitorização cardíaca contínua.' },
-            { doseMin: 20.0, tipo: 'danger', texto: 'Velocidade alta. Avaliar real necessidade e risco de arritmia.' }
-            ]
-        },
-        { 
-            id: 'kcl_perif', nome: 'Cloreto de Potássio 19,1% (AVP)', classe: 'REPOSIÇÃO K+', unidade: 'mEq/h', 
-            min: 2, max: 15, step: 1, padrao: 5, limites: [5, 8, 10], botoes: [5, 8, 10],
-            diluicoes: { simples: { nome: 'Padrão', texto: '1 amp (25 mEq) + 500 mL SF 0.9%', conc: 0.05, via: 'AVP (Máx 60mEq/L)' } },
-            alertas: [
-            { doseMin: 10.0, tipo: 'warning', texto: 'Limite máximo para AVP atingido. Alto risco de flebite.' }
-            ]
-        },
-        { 
-            id: 'magnesio_dhe', nome: 'Sulfato de Magnésio 10%', classe: 'REPOSIÇÃO Mg2+', unidade: 'g/h', 
-            min: 0.5, max: 4.0, step: 0.5, padrao: 1.0, limites: [1.0, 2.0, 3.0], botoes: [0.5, 1.0, 2.0, 4.0],
-            diluicoes: { 
-            conc20: { nome: 'SG 20mg/mL', texto: '2 amp (2g) + 100 mL SG 5%', conc: 0.02, via: 'AVP / CVC' },
-            conc8: { nome: 'SG 8mg/mL', texto: '2 amp (2g) + 250 mL SG 5%', conc: 0.008, via: 'AVP / CVC' }
-            },
-            alertas: [
-            { doseMin: 0.0, tipo: 'info', texto: 'Ajuste Renal: Reduzir em 50%. Não exceder 20g/48h se IR grave.' },
-            { doseMin: 1.5, tipo: 'warning', texto: 'O magnésio tem eliminação urinária rápida se reposto EV em velocidade > 1g/h.' }
-            ]
-        },
-        { 
-            id: 'calcio_gluconato', nome: 'Gluconato de Cálcio 10%', classe: 'REPOSIÇÃO Ca2+', unidade: 'g/h', 
-            min: 0.5, max: 2.0, step: 0.5, padrao: 1.0, limites: [1.0, 1.5, 2.0], botoes: [0.5, 1.0, 2.0],
-            diluicoes: { simples: { nome: 'Padrão', texto: '1 amp (1g) + 100 mL SG 5%', conc: 0.01, via: 'AVP / CVC' } },
-            alertas: [
-            { doseMin: 0.0, tipo: 'info', texto: 'Acesso periférico calibroso aceitável. Risco de necrose tecidual se extravasar.' }
-            ]
-        }
-        ];
-
-        const antibioticos = [
-        { nome: 'Aciclovir', categoria: 'Antivirais', classe: 'Antiviral', amp: 250, diluicao: '50-100mL (SF/SG) • Infusão: 1h', via: 'AVP / CVC', obs: 'Em diálise, fazer dose após a sessão.', doses: { '>50': { val: 10, max: 800, freq: '8/8h' }, '10-50': { val: 10, max: 800, freq: '12/12h a 24/24h' }, '<10': { val: 5, max: 400, freq: '24/24h' }, 'HD': { val: 5, max: 400, freq: '24/24h (Após)' }, 'CAPD': { val: 5, max: 400, freq: '24/24h' }, 'CRRT': { val: 7.5, max: 800, freq: '24/24h' } } },
-        { nome: 'Amicacina', categoria: 'Aminoglicosídeos', classe: 'Aminoglicosídeo', amp: 500, diluicao: '100-200mL (SF/SG) • Infusão: 30-60min', via: 'AVP / CVC', obs: 'Dose calculada idealmente por Peso Ajustado.', doses: { '>50': { val: 15, max: 1500, freq: '24/24h' }, '10-50': { val: 7.5, max: 750, freq: '24/24h' }, '<10': { val: 7.5, max: 750, freq: '48/48h' }, 'HD': { val: 7.5, max: 750, freq: '48/48h (Após)' }, 'CAPD': '10 a 20mg/L dialisado perdido', 'CRRT': { val: 7.5, max: 750, freq: '24/24h' } } },
-        { nome: 'Amoxicilina-clavulanato', categoria: 'Penicilinas', classe: 'Penicilina + IBL', amp: 1000, diluicao: '50-100mL (SF) • Infusão: 3-30min', via: 'AVP / CVC', obs: 'Reforço 500mg após HD', doses: { '>50': '500mg a 1g (1 FA) 8/8h', '10-50': { doseFixa: 500, freq: '12/12h' }, '<10': { doseFixa: 500, freq: '24/24h' }, 'HD': { doseFixa: 500, freq: '24/24h (Após)' }, 'CAPD': { doseFixa: 250, freq: '12/12h' }, 'CRRT': 'Sem dados' } },
-        { nome: 'Ampicilina', categoria: 'Penicilinas', classe: 'Penicilina', amp: 1000, diluicao: '100mL (SF) • Infusão: 30min', via: 'AVP / CVC', doses: { '>50': '1 a 2g (1 a 2 FA) 6/6h', '10-50': '1 a 2g (1 a 2 FA) 6/6h a 12/12h', '<10': '1 a 2g (1 a 2 FA) 12/12h a 24/24h', 'HD': '1 a 2g (1 a 2 FA) 12/12h (Após)', 'CAPD': { doseFixa: 250, freq: '12/12h' }, 'CRRT': '1 a 2g (1 a 2 FA) 6/6h' } },
-        { nome: 'Ampicilina-sulbactam', categoria: 'Penicilinas', classe: 'Penicilina + IBL', amp: 3000, diluicao: '50-100mL (SF/SG) • Infusão: 30min', via: 'AVP / CVC', doses: { '>50': { doseFixa: 3000, freq: '6/6h' }, '10-50': '3g (1 FA) 8/8h a 12/12h', '<10': { doseFixa: 3000, freq: '24/24h' }, 'HD': { doseFixa: 3000, freq: '24/24h (Após)' }, 'CAPD': { doseFixa: 3000, freq: '24/24h' }, 'CRRT': '1,5g a 3g 12/12h' } },
-        { nome: 'Anfotericina B (Convencional)', categoria: 'Antifúngicos', classe: 'Antifúngico', amp: 50, diluicao: '250-500mL (SG) • Infusão: 4-6h', via: 'CVC Preferencial', obs: 'Não compatível com SF 0.9%.', doses: { '>50': { val: 1, max: 100, freq: '24/24h' }, '10-50': { val: 1, max: 100, freq: '24/24h' }, '<10': { val: 1, max: 100, freq: '24/24h' }, 'HD': { val: 1, max: 100, freq: '24/24h' }, 'CAPD': { val: 1, max: 100, freq: '24/24h' }, 'CRRT': { val: 1, max: 100, freq: '24/24h' } } },
-        { nome: 'Anfotericina B (Lipídica)', categoria: 'Antifúngicos', classe: 'Antifúngico', amp: 50, diluicao: '200-250mL (SG) • Infusão: 2h', via: 'CVC Preferencial', obs: 'Não diluir em SF 0.9%. Sem correção pela TFG.', doses: { '>50': { val: 5, max: 500, freq: '24/24h' }, '10-50': { val: 5, max: 500, freq: '24/24h' }, '<10': { val: 5, max: 500, freq: '24/24h' }, 'HD': { val: 5, max: 500, freq: '24/24h' }, 'CAPD': { val: 5, max: 500, freq: '24/24h' }, 'CRRT': { val: 5, max: 500, freq: '24/24h' } } },
-        { nome: 'Anidulafungina', categoria: 'Antifúngicos', classe: 'Echinocandina', amp: 100, diluicao: '100mL (SF/SG) • Infusão: 1-2h', via: 'AVP / CVC', doses: { '>50': { doseFixa: 100, freq: '24/24h (Ataque 200mg)' }, '10-50': { doseFixa: 100, freq: '24/24h (Ataque 200mg)' }, '<10': { doseFixa: 100, freq: '24/24h (Ataque 200mg)' }, 'HD': { doseFixa: 100, freq: '24/24h (Ataque 200mg)' }, 'CAPD': { doseFixa: 100, freq: '24/24h (Ataque 200mg)' }, 'CRRT': { doseFixa: 100, freq: '24/24h (Ataque 200mg)' } } },
-        { nome: 'Cefazolina', categoria: 'Cefalosporinas', classe: 'Cefalosporina 1ªG', amp: 1000, diluicao: '50-100mL (SF/SG) • Infusão: 30min', via: 'AVP / CVC', obs: 'Reforço 500mg a 1g após HD', doses: { '>50': '1 a 2g (1 a 2 FA) 8/8h', '10-50': '1 a 2g (1 a 2 FA) 12/12h', '<10': '1 a 2g (1 a 2 FA) 24/24h a 48/48h', 'HD': '1 a 2g (1 a 2 FA) 24/24h a 48/48h (Após)', 'CAPD': { doseFixa: 500, freq: '12/12h' }, 'CRRT': '1 a 2g (1 a 2 FA) 12/12h' } },
-        { nome: 'Cefepime', categoria: 'Cefalosporinas', classe: 'Cefalosporina 4ªG', amp: 1000, diluicao: '50-100mL (SF/SG) • Infusão: 3-30min', via: 'AVP / CVC', obs: 'Reforço 1g após HD', doses: { '>50': '2g (2 FA) 12/12h ou 1-2g 8/8h', '10-50': '1 a 2g (1 a 2 FA) 12/12h a 24/24h', '<10': { doseFixa: 1000, freq: '24/24h' }, 'HD': { doseFixa: 1000, freq: '24/24h (Após)' }, 'CAPD': '1 a 2g (1 a 2 FA) 48/48h', 'CRRT': '2g (2 FA) 12/12h a 24/24h' } },
-        { nome: 'Cefotaxima', categoria: 'Cefalosporinas', classe: 'Cefalosporina 3ªG', amp: 1000, diluicao: '50-100mL (SF/SG) • Infusão: 30min', via: 'AVP / CVC', doses: { '>50': { doseFixa: 2000, freq: '8/8h' }, '10-50': '2g (2 FA) 8/8h a 12/12h', '<10': '2g (2 FA) 12/12h a 24/24h', 'HD': { doseFixa: 2000, freq: '24/24h (Após)' }, 'CAPD': '500mg a 1g 24/24h', 'CRRT': '2g (2 FA) 12/12h a 24/24h' } },
-        { nome: 'Cefoxitina', categoria: 'Cefalosporinas', classe: 'Cefalosporina 2ªG', amp: 1000, diluicao: '50-100mL (SF/SG) • Infusão: 30min', via: 'AVP / CVC', doses: { '>50': { doseFixa: 2000, freq: '8/8h' }, '10-50': '2g (2 FA) 8/8h a 12/12h', '<10': '2g (2 FA) 24/24h a 48/48h', 'HD': '2g (2 FA) 24/24h a 48/48h (Após)', 'CAPD': { doseFixa: 1000, freq: '24/24h' }, 'CRRT': '2g (2 FA) 8/8h a 12/12h' } },
-        { nome: 'Ceftarolina', categoria: 'Cefalosporinas', classe: 'Cefalosporina 5ªG', amp: 600, diluicao: '50-250mL (SF/SG) • Infusão: 1h', via: 'AVP / CVC', doses: { '>50': { doseFixa: 600, freq: '12/12h' }, '10-50': '400 a 300mg 12/12h', '<10': { doseFixa: 200, freq: '24/24h' }, 'HD': { doseFixa: 200, freq: '12/12h (Após)' }, 'CAPD': 'Sem dados', 'CRRT': 'Sem dados' } },
-        { nome: 'Ceftazidima', categoria: 'Cefalosporinas', classe: 'Cefalosporina 3ªG', amp: 1000, diluicao: '50-100mL (SF/SG) • Infusão: 3-60min', via: 'AVP / CVC', obs: 'Reforço 1g após HD', doses: { '>50': '1 a 2g (1 a 2 FA) 8/8h', '10-50': '1 a 2g (1 a 2 FA) 12/12h a 24/24h', '<10': '2g (2 FA) 24/24h a 48/48h', 'HD': '2g (2 FA) 24/24h a 48/48h (Após)', 'CAPD': { doseFixa: 500, freq: '24/24h' }, 'CRRT': '1 a 2g (1 a 2 FA) 12/12h a 24/24h' } },
-        { nome: 'Ceftazidima-Avibactam', categoria: 'Cefalosporinas', classe: 'Cefalosporina + IBL', amp: 2500, diluicao: '250mL (SF/SG) p/ AVP ou 100mL p/ CVC', via: 'AVP / CVC', obs: 'Em HD: infusão em 1h com banho desligado', doses: { '>50': { doseFixa: 2500, freq: '8/8h' }, '10-50': '1,25g 8/8h a 940mg 12/12h', '<10': '940mg 24/24h a 48/48h', 'HD': { doseFixa: 940, freq: '48/48h (Após)' }, 'CAPD': { doseFixa: 940, freq: '48/48h' }, 'CRRT': { doseFixa: 1250, freq: '8/8h' } } },
-        { nome: 'Ceftolozane-Tazobactam', categoria: 'Cefalosporinas', classe: 'Cefalosporina + IBL', amp: 1500, diluicao: '100mL (SF/SG) • Infusão: 1h', via: 'AVP / CVC', obs: 'Na Pneumonia dobrar a dose.', doses: { '>50': { doseFixa: 1500, freq: '8/8h' }, '10-50': '750 a 375mg 8/8h', '<10': { doseFixa: 150, freq: '8/8h (Ataque 750mg)' }, 'HD': { doseFixa: 150, freq: '8/8h (Após)' }, 'CAPD': { doseFixa: 150, freq: '8/8h' }, 'CRRT': { doseFixa: 1500, freq: '8/8h' } } },
-        { nome: 'Ceftriaxona', categoria: 'Cefalosporinas', classe: 'Cefalosporina 3ªG', amp: 1000, diluicao: '50-100mL (SF/SG) • Infusão: 2-30min', via: 'AVP / CVC', obs: 'Excreção biliar predominante. Dose máxima 4g/dia.', doses: { '>50': '1 a 2g (1 a 2 FA) 12/12h a 24/24h', '10-50': '1 a 2g (1 a 2 FA) 12/12h a 24/24h', '<10': '1 a 2g (1 a 2 FA) 12/12h a 24/24h', 'HD': '1 a 2g (1 a 2 FA) 12/12h a 24/24h', 'CAPD': '1 a 2g (1 a 2 FA) 12/12h a 24/24h', 'CRRT': '1 a 2g (1 a 2 FA) 12/12h a 24/24h' } },
-        { nome: 'Cefuroxima', categoria: 'Cefalosporinas', classe: 'Cefalosporina 2ªG', amp: 750, diluicao: '50-100mL (SF/SG) • Infusão: 30min', via: 'AVP / CVC', doses: { '>50': '750mg a 1,5g (1 a 2 FA) 8/8h', '10-50': '750mg a 1,5g (1 a 2 FA) 8/8h a 12/12h', '<10': '750mg a 1,5g (1 a 2 FA) 24/24h', 'HD': '750mg a 1,5g 24/24h (Após)', 'CAPD': '750mg a 1,5g 24/24h', 'CRRT': '750mg a 1,5g 8/8h a 12/12h' } },
-        { nome: 'Ciprofloxacino', categoria: 'Quinolonas', classe: 'Quinolona', amp: 400, diluicao: 'Bag Pronta (SF/SG) • Infusão: 1h', via: 'AVP / CVC', doses: { '>50': { doseFixa: 400, freq: '12/12h' }, '10-50': { doseFixa: 200, freq: '12/12h' }, '<10': { doseFixa: 200, freq: '12/12h' }, 'HD': { doseFixa: 200, freq: '12/12h' }, 'CAPD': { doseFixa: 200, freq: '8/8h' }, 'CRRT': { doseFixa: 400, freq: '12/12h' } } },
-        { nome: 'Claritromicina', categoria: 'Macrolídeos', classe: 'Macrolídeo', amp: 500, diluicao: '100-250mL (SF/SG) • Infusão: 1h', via: 'AVP / CVC', doses: { '>50': { doseFixa: 500, freq: '12/12h' }, '10-50': { doseFixa: 250, freq: '12/12h' }, '<10': { doseFixa: 250, freq: '24/24h' }, 'HD': { doseFixa: 250, freq: '24/24h (Após)' }, 'CAPD': 'Não usar', 'CRRT': { doseFixa: 250, freq: '8/8h' } } },
-        { nome: 'Clindamicina', categoria: 'Outros', classe: 'Lincosamida', amp: 600, diluicao: '50-100mL (SF/SG) • Infusão: 1h', via: 'AVP / CVC', doses: { '>50': { doseFixa: 600, freq: '8/8h a 6/6h' }, '10-50': { doseFixa: 600, freq: '8/8h a 6/6h' }, '<10': { doseFixa: 600, freq: '8/8h a 6/6h' }, 'HD': { doseFixa: 600, freq: '8/8h a 6/6h' }, 'CAPD': { doseFixa: 600, freq: '8/8h a 6/6h' }, 'CRRT': { doseFixa: 600, freq: '8/8h a 6/6h' } } },
-        { nome: 'Cloranfenicol', categoria: 'Outros', classe: 'Anfenicol', amp: 1000, diluicao: '50-100mL (SF) • Infusão: 30-60min', via: 'AVP / CVC', obs: 'Dose máxima diária: 4g', doses: { '>50': { val: 12.5, max: 1000, freq: '6/6h' }, '10-50': { val: 12.5, max: 1000, freq: '6/6h' }, '<10': { val: 12.5, max: 1000, freq: '6/6h' }, 'HD': { val: 12.5, max: 1000, freq: '6/6h' }, 'CAPD': { val: 12.5, max: 1000, freq: '6/6h' }, 'CRRT': { val: 12.5, max: 1000, freq: '6/6h' } } },
-        { nome: 'Daptomicina', categoria: 'Glicopeptídeos/Lipopeptídeos', classe: 'Lipopeptídeo', amp: 500, diluicao: '50mL (SF) • Infusão: 30min', via: 'AVP / CVC', obs: 'Não compatível com SG 5%. Monitorizar CPK.', doses: { '>50': { val: 6, max: 1000, freq: '24/24h' }, '10-50': { val: 6, max: 1000, freq: '24-48h' }, '<10': { val: 6, max: 1000, freq: '48/48h' }, 'HD': { val: 6, max: 1000, freq: '48/48h (Após)' }, 'CAPD': { val: 6, max: 1000, freq: '48/48h' }, 'CRRT': { val: 6, max: 1000, freq: '24/24h' } } },
-        { nome: 'Ertapenem', categoria: 'Carbapenêmicos', classe: 'Carbapenêmico', amp: 1000, diluicao: '50mL (SF) • Infusão: 30min', via: 'AVP / CVC', obs: 'Reforço 150mg se HD < 6h. Não compatível com SG 5%.', doses: { '>50': { doseFixa: 1000, freq: '24/24h' }, '10-50': { doseFixa: 1000, freq: '24/24h' }, '<10': { doseFixa: 500, freq: '24/24h' }, 'HD': { doseFixa: 500, freq: '24/24h' }, 'CAPD': { doseFixa: 500, freq: '24/24h' }, 'CRRT': { doseFixa: 1000, freq: '24/24h' } } },
-        { nome: 'Fluconazol', categoria: 'Antifúngicos', classe: 'Antifúngico', diluicao: 'Bag Pronta (SF/SG) • Infusão: 1-2h', via: 'AVP / CVC', doses: { '>50': { doseFixa: 400, freq: '24/24h' }, '10-50': 'Reduzir dose em 50%', '<10': { doseFixa: 200, freq: '24/24h' }, 'HD': { doseFixa: 400, freq: '24/24h' }, 'CAPD': 'Não usar', 'CRRT': '400-800mg 24/24h' } },
-        { nome: 'Ganciclovir', categoria: 'Antivirais', classe: 'Antiviral', amp: 500, diluicao: '50-100mL (SF/SG) • Infusão: 1h', via: 'AVP / CVC', obs: 'Profilaxia: usar metade da dose.', doses: { '>50': { val: 5, max: 500, freq: '12/12h' }, '10-50': { val: 2.5, max: 250, freq: '12/12h a 24/24h' }, '<10': { val: 1.25, max: 125, freq: '24/24h' }, 'HD': { val: 1.25, max: 125, freq: '3x/sem (Após)' }, 'CAPD': { val: 1.25, max: 125, freq: '3x/sem' }, 'CRRT': { val: 2.5, max: 250, freq: '24/24h' } } },
-        { nome: 'Gentamicina', categoria: 'Aminoglicosídeos', classe: 'Aminoglicosídeo', amp: 80, diluicao: '50-200mL (SF/SG) • Infusão: 30min-2h', via: 'AVP / CVC', obs: 'Dose baseada em 5mg/kg. Pode variar de 3 a 7mg/kg.', doses: { '>50': { val: 5, max: 500, freq: '24/24h' }, '10-50': { val: 5, max: 500, freq: '48/48h' }, '<10': { val: 2, max: 200, freq: '24/24h' }, 'HD': { val: 2, max: 200, freq: '48/48h (Após)' }, 'CAPD': '3 a 4mg/L perdido na diálise/dia', 'CRRT': '1 a 3mg/kg 24/24h' } },
-        { nome: 'Itraconazol', categoria: 'Antifúngicos', classe: 'Antifúngico', amp: 100, via: 'Oral/EV', doses: { '>50': '200mg 12/12h ou 24/24h', '10-50': '200mg 12/12h ou 24/24h', '<10': { doseFixa: 200, freq: '24/24h' }, 'HD': '100mg 12/12h a 24/24h', 'CAPD': '100mg 12/12h a 24/24h', 'CRRT': '200mg 12/12h ou 24/24h' } },
-        { nome: 'Levofloxacino', categoria: 'Quinolonas', classe: 'Quinolona', diluicao: 'Bag Pronta (SF/SG) • Infusão: 1h', via: 'AVP / CVC', doses: { '>50': { doseFixa: 750, freq: '24/24h' }, '10-50': { doseFixa: 750, freq: '48/48h' }, '<10': { doseFixa: 500, freq: '48/48h' }, 'HD': { doseFixa: 500, freq: '48/48h' }, 'CAPD': { doseFixa: 500, freq: '48/48h' }, 'CRRT': '500 a 750mg 24/24h' } },
-        { nome: 'Linezolida', categoria: 'Outros', classe: 'Oxazolidinona', diluicao: 'Bag Pronta (SF/SG) • Infusão: 30min a 2h', via: 'AVP / CVC', doses: { '>50': { doseFixa: 600, freq: '12/12h' }, '10-50': { doseFixa: 600, freq: '12/12h' }, '<10': { doseFixa: 600, freq: '12/12h' }, 'HD': { doseFixa: 600, freq: '12/12h (Após)' }, 'CAPD': { doseFixa: 600, freq: '12/12h' }, 'CRRT': { doseFixa: 600, freq: '12/12h' } } },
-        { nome: 'Meropenem', categoria: 'Carbapenêmicos', classe: 'Carbapenêmico', amp: 1000, diluicao: '50-250mL (SF/SG) • Infusão: 3h', via: 'AVP / CVC', obs: 'Reforço 500mg após HD', doses: { '>50': { doseFixa: 1000, freq: '8/8h' }, '10-50': { doseFixa: 1000, freq: '12/12h' }, '<10': '500mg 24/24h ou 1g 12/12h', 'HD': { doseFixa: 500, freq: '24/24h' }, 'CAPD': { doseFixa: 500, freq: '24/24h' }, 'CRRT': { doseFixa: 1000, freq: '12/12h' } } },
-        { nome: 'Metronidazol', categoria: 'Outros', classe: 'Nitroimidazólico', diluicao: 'Bag Pronta (SF/SG) • Infusão: 1h', via: 'AVP / CVC', doses: { '>50': { doseFixa: 500, freq: '8/8h' }, '10-50': { doseFixa: 500, freq: '8/8h' }, '<10': { doseFixa: 500, freq: '8/8h' }, 'HD': { doseFixa: 500, freq: '8/8h' }, 'CAPD': { doseFixa: 500, freq: '8/8h' }, 'CRRT': { doseFixa: 500, freq: '8/8h' } } },
-        { nome: 'Micafungina', categoria: 'Antifúngicos', classe: 'Echinocandina', amp: 100, diluicao: '100mL (SF/SG) • Infusão: 1h', via: 'AVP / CVC', doses: { '>50': { doseFixa: 100, freq: '24/24h' }, '10-50': { doseFixa: 100, freq: '24/24h' }, '<10': { doseFixa: 100, freq: '24/24h' }, 'HD': { doseFixa: 100, freq: '24/24h' }, 'CAPD': { doseFixa: 100, freq: '24/24h' }, 'CRRT': { doseFixa: 100, freq: '24/24h' } } },
-        { nome: 'Moxifloxacino', categoria: 'Quinolonas', classe: 'Quinolona', diluicao: 'Bag Pronta • Infusão: 1h', via: 'AVP / CVC', doses: { '>50': { doseFixa: 400, freq: '24/24h' }, '10-50': { doseFixa: 400, freq: '24/24h' }, '<10': { doseFixa: 400, freq: '24/24h' }, 'HD': { doseFixa: 400, freq: '24/24h' }, 'CAPD': { doseFixa: 400, freq: '24/24h' }, 'CRRT': { doseFixa: 400, freq: '24/24h' } } },
-        { nome: 'Oseltamivir', categoria: 'Antivirais', classe: 'Antiviral', via: 'Oral/SNE', obs: 'Em pacientes críticos, pode-se considerar dose dobrada.', doses: { '>50': { doseFixa: 75, freq: '12/12h' }, '10-50': '30 a 75mg 12/12h', '<10': { doseFixa: 30, freq: '24/24h' }, 'HD': { doseFixa: 30, freq: '(Após sessão)' }, 'CAPD': '30mg 1x semana', 'CRRT': 'Sem dados' } },
-        { nome: 'Oxacilina', categoria: 'Penicilinas', classe: 'Penicilina', amp: 500, diluicao: '50-100mL (SF/SG) • Infusão: 10min a 3h', via: 'CVC Preferencial', doses: { '>50': { doseFixa: 2000, freq: '4/4h' }, '10-50': { doseFixa: 2000, freq: '4/4h' }, '<10': { doseFixa: 2000, freq: '4/4h' }, 'HD': { doseFixa: 2000, freq: '4/4h' }, 'CAPD': { doseFixa: 2000, freq: '4/4h' }, 'CRRT': { doseFixa: 2000, freq: '4/4h' } } },
-        { nome: 'Penicilina Cristalina', categoria: 'Penicilinas', classe: 'Penicilina', amp: 5000000, diluicao: '50-100mL (SF/SG) • Infusão: 1-2h', via: 'AVP / CVC', doses: { '>50': '1 a 4 milhões UI 4/4h', '10-50': '75% da dose (1-4 mi UI 6/6h a 8/8h)', '<10': '20-50% da dose (1-4 mi UI 12/12h)', 'HD': '1 a 4 milhões UI 12/12h (Após)', 'CAPD': '1 a 4 milhões UI 12/12h', 'CRRT': '1 a 4 milhões UI 6/6h' } },
-        { nome: 'Piperacilina-Tazobactam', categoria: 'Penicilinas', classe: 'Penicilina + IBL', amp: 4500, diluicao: '50-100mL (SF/SG) • Infusão: 3h', via: 'AVP / CVC', doses: { '>50': { doseFixa: 4500, freq: '6/6h' }, '10-50': { doseFixa: 4500, freq: '8/8h' }, '<10': { doseFixa: 2250, freq: '8/8h' }, 'HD': { doseFixa: 2250, freq: '8/8h' }, 'CAPD': { doseFixa: 2250, freq: '8/8h' }, 'CRRT': { doseFixa: 4500, freq: '8/8h' } } },
-        { nome: 'Polimixina B', categoria: 'Outros', classe: 'Polimixina', amp: 500000, diluicao: '300-500mL (SG) • Infusão: 1 a 1.5h', via: 'CVC Preferencial', obs: 'Sem ajuste renal. Ataque: 20-25mil UI/kg.', doses: { '>50': { val: 15000, unid: 'UI', freq: '12/12h (Manut)', max: 1500000 }, '10-50': { val: 15000, unid: 'UI', freq: '12/12h (Manut)', max: 1500000 }, '<10': { val: 15000, unid: 'UI', freq: '12/12h (Manut)', max: 1500000 }, 'HD': { val: 15000, unid: 'UI', freq: '12/12h (Manut)', max: 1500000 }, 'CAPD': { val: 15000, unid: 'UI', freq: '12/12h (Manut)', max: 1500000 }, 'CRRT': { val: 15000, unid: 'UI', freq: '12/12h (Manut)', max: 1500000 } } },
-        { nome: 'SMX-TMP', categoria: 'Outros', classe: 'Sulfonamida', amp: 80, diluicao: '125-250mL (SG) • Infusão: 1.5h', via: 'AVP / CVC', obs: 'Dose baseada no componente TMP. Evitar em ClCr < 10.', doses: { '>50': '5 a 20mg/Kg/dia de TMP 12 a 6/6h', '10-50': '5 a 10mg/Kg/dia de TMP 12 a 6/6h', '<10': 'Não recomendado', 'HD': { val: 5, max: 160, freq: '24/24h' }, 'CAPD': 'Não recomendado', 'CRRT': '5mg/kg de TMP 8/8h' } },
-        { nome: 'Teicoplanina', categoria: 'Glicopeptídeos/Lipopeptídeos', classe: 'Glicopeptídeo', amp: 400, diluicao: '50-100mL (SF/SG) • Infusão: 30min', via: 'AVP / CVC', obs: 'Não reduzir dose de ataque nos primeiros 3-5 dias.', doses: { '>50': { val: 6, max: 1200, freq: '24/24h' }, '10-50': { val: 6, max: 1200, freq: '48/48h' }, '<10': { val: 6, max: 1200, freq: '72/72h' }, 'HD': { val: 6, max: 1200, freq: '72/72h' }, 'CAPD': { val: 6, max: 1200, freq: '72/72h' }, 'CRRT': { val: 6, max: 1200, freq: '48/48h' } } },
-        { nome: 'Tigeciclina', categoria: 'Outros', classe: 'Glicilciclina', amp: 50, diluicao: '50mL (SG/SRL) • Infusão: 30-60min', via: 'AVP / CVC', doses: { '>50': { doseFixa: 50, freq: '12/12h (Ataque 100mg)' }, '10-50': { doseFixa: 50, freq: '12/12h (Ataque 100mg)' }, '<10': { doseFixa: 50, freq: '12/12h (Ataque 100mg)' }, 'HD': { doseFixa: 50, freq: '12/12h (Ataque 100mg)' }, 'CAPD': { doseFixa: 50, freq: '12/12h (Ataque 100mg)' }, 'CRRT': { doseFixa: 50, freq: '12/12h (Ataque 100mg)' } } },
-        { nome: 'Vancomicina', categoria: 'Glicopeptídeos/Lipopeptídeos', classe: 'Glicopeptídeo', amp: 500, diluicao: '100-200mL (SF/SG) • Infusão: 1-2h', via: 'CVC Preferencial', obs: 'Ataque: 25-30mg/kg sempre. Ideal dosar nível sérico.', doses: { '>50': { val: 15, max: 2000, freq: '12/12h' }, '10-50': '15mg/kg 24/24h a 96/96h', '<10': '15mg/Kg a cada 4 a 7 dias', 'HD': { val: 15, max: 2000, freq: '48/48h (Após)' }, 'CAPD': { val: 15, max: 2000, freq: '48/48h' }, 'CRRT': { val: 15, max: 2000, freq: '24/24h' } } },
-        { nome: 'Voriconazol', categoria: 'Antifúngicos', classe: 'Antifúngico', amp: 200, via: 'CVC Preferencial', obs: 'Não recomendado EV em ClCr<50. Preferir via Oral.', doses: { '>50': { val: 4, max: 400, freq: '12/12h' }, '10-50': 'Oral: 200mg 12/12h', '<10': 'Oral: 200mg 12/12h', 'HD': 'Oral: 200mg 12/12h', 'CAPD': 'Oral: 200mg 12/12h', 'CRRT': 'Oral: 4mg/kg 12/12h' } }
-        ];
-
-        function App() {
-            const [peso, setPeso] = useState(60);
-            const [clearance, setClearance] = useState('>50');
-            const [abaAtual, setAbaAtual] = useState('VASOATIVOS');
-            const [modalCrCl, setModalCrCl] = useState(false);
-
-            const abas = ['VASOATIVOS', 'INOTRÓPICOS', 'SEDOANALGESIA', 'ARRITMIA', 'DHE', 'ANTIBIÓTICOS', 'IOT'];
-
-            const [isScrolledEnd, setIsScrolledEnd] = useState(false);
-            const scrollRef = useRef(null);
-            
-            const checkScroll = (element) => {
-                if (!element) return;
-                setIsScrolledEnd(element.scrollLeft + element.clientWidth >= element.scrollWidth - 5);
-            };
-
-            useEffect(() => {
-                window.scrollTo({ top: 0, behavior: 'smooth' }); 
-                const timer = setTimeout(() => { checkScroll(scrollRef.current); }, 50);
-                const handleResize = () => checkScroll(scrollRef.current);
-                window.addEventListener('resize', handleResize);
-                return () => { clearTimeout(timer); window.removeEventListener('resize', handleResize); };
-            }, [abaAtual]);
-
-            return (
-                <div className="flex flex-col min-h-screen">
-                
-                {/* HEADER GLOBAL */}
-                <header className="bg-slate-800 border-b border-slate-700 sticky top-0 z-40 shadow-md shrink-0">
-                    <div className="max-w-[1400px] mx-auto p-4 pb-2">
-                    <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-2">
-                        <Activity className="text-cyan-400" size={24} />
-                        <h1 className="text-xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
-                            Calculadora UTI
-                        </h1>
-                        </div>
-                        <span className="text-xs text-slate-400 bg-slate-900 px-2 py-1 rounded-full border border-slate-700">v19.1 GITHUB</span>
-                    </div>
-
-                    <div className="bg-slate-900/50 p-4 rounded-xl border border-slate-700">
-                        <div className="flex justify-between items-end mb-2">
-                        <label className="text-sm font-semibold text-slate-300">Peso do Paciente</label>
-                        <span className="text-2xl font-mono text-cyan-400">{peso} <span className="text-sm text-slate-500">kg</span></span>
-                        </div>
-                        <input type="range" min="30" max="150" value={peso} onChange={(e) => setPeso(Number(e.target.value))} className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-cyan-500" />
-                    </div>
-                    </div>
-                    
-                    <div className="relative max-w-[1400px] mx-auto mt-2">
-                    <div ref={scrollRef} onScroll={(e) => checkScroll(e.target)} className="px-4 flex overflow-x-auto scrollbar-hide border-t border-slate-700/50 pb-1">
-                        {abas.map(tab => (
-                        <button key={tab} onClick={() => { setAbaAtual(tab); setTimeout(() => checkScroll(scrollRef.current), 50); }} className={`px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors border-b-2 ${tab === 'ANTIBIÓTICOS' ? 'lg:hidden ' : ''} ${abaAtual === tab ? 'border-cyan-400 text-cyan-400' : 'border-transparent text-slate-400 hover:text-slate-200'}`}>
-                            {tab}
-                        </button>
-                        ))}
-                    </div>
-                    {!isScrolledEnd && (
-                        <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-slate-800 to-transparent pointer-events-none flex items-center justify-end pr-2 border-b border-slate-700/50">
-                        <ChevronRight size={20} className="text-cyan-400 animate-pulse drop-shadow-md" />
-                        </div>
-                    )}
-                    </div>
-                </header>
-
-                {}
-                {/* ÁREA DE TRABALHO */}
-                <main className="max-w-[1400px] mx-auto p-4 pb-20 w-full flex-1 flex flex-col lg:flex-row gap-6 items-start">
-                    <div className="flex-1 w-full">
-                    
-                    {/* FÁRMACOS CONTÍNUOS */}
-                    {abaAtual !== 'ANTIBIÓTICOS' && abaAtual !== 'IOT' && abaAtual !== 'DHE' && (
-                        <div className="grid gap-6 md:grid-cols-2">
-                        {abaAtual === 'VASOATIVOS' && drogasVasoativas.map(d => <DrugCard key={d.id} droga={d} peso={peso} />)}
-                        {abaAtual === 'INOTRÓPICOS' && inotropicos.map(d => <DrugCard key={d.id} droga={d} peso={peso} />)}
-                        {abaAtual === 'SEDOANALGESIA' && sedoanalgesia.map(d => <DrugCard key={d.id} droga={d} peso={peso} />)}
-                        {abaAtual === 'ARRITMIA' && arritmia.map(d => <DrugCard key={d.id} droga={d} peso={peso} />)}
-                        </div>
-                    )}
-                    
-                    {/* ABA DE DHE */}
-                    {abaAtual === 'DHE' && (
-                        <div className="space-y-6">
-                        
-                        <PainelSodio />
-                        
-                        <div className="grid gap-6 md:grid-cols-2">
-                            {dhe.filter(d => d.classe.includes('K+')).map(d => <DrugCard key={d.id} droga={d} peso={peso} />)}
-                        </div>
-                        <div className="grid gap-6 md:grid-cols-2">
-                            {dhe.filter(d => d.classe.includes('Mg2+')).map(d => <DrugCard key={d.id} droga={d} peso={peso} />)}
-                            {dhe.filter(d => d.classe.includes('Ca2+')).map(d => <DrugCard key={d.id} droga={d} peso={peso} />)}
-                        </div>
-
-                        <PainelBicarbonato peso={peso} />
-                        </div>
-                    )}
-
-                    {abaAtual === 'IOT' && <IotPanel peso={peso} />}
-
-                    <div className="lg:hidden w-full">
-                        {abaAtual === 'ANTIBIÓTICOS' && (
-                        <AntibioticosPanel clearance={clearance} setClearance={setClearance} peso={peso} setModalCrCl={setModalCrCl} isMobile={true} />
-                        )}
-                    </div>
-                    </div>
-
-                    {abaAtual !== 'IOT' && (
-                    <div className="hidden lg:flex flex-col w-[420px] shrink-0 border-l border-slate-800 pl-6 sticky top-[180px] self-start max-h-[calc(100vh-200px)] overflow-y-auto custom-scrollbar pr-2">
-                        <AntibioticosPanel clearance={clearance} setClearance={setClearance} peso={peso} setModalCrCl={setModalCrCl} isMobile={false} />
-                    </div>
-                    )}
-
-                </main>
-
-                {modalCrCl && <CrClModal onClose={() => setModalCrCl(false)} setClearance={setClearance} peso={peso} />}
-                </div>
-            );
-        }
-
-        function PainelSodio() {
-            const [naAtual, setNaAtual] = useState(115);
-            const [naAlvo, setNaAlvo] = useState(125); 
-            const [aguaCor, setAguaCor] = useState(36); 
-            const [isHipovolemico, setIsHipovolemico] = useState(true);
-
-            let deficitSodio = aguaCor * (naAlvo - naAtual);
-            if (deficitSodio < 0) deficitSodio = 0;
-
-            const mlNacl3 = deficitSodio / 0.513;
-            const vazaoH = mlNacl3 / 24;
-            const adrogueMadias = (513 - naAtual) / (aguaCor + 1);
-
-            return (
-                <div className="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500"></div>
-                
-                <div className="flex justify-between items-start mb-4">
-                    <h3 className="font-bold text-lg text-slate-100 flex items-center gap-2">
-                    <Waves size={20} className="text-emerald-400" /> Hiponatremia (Salina 3%)
-                    </h3>
-                    <button onClick={() => setIsHipovolemico(!isHipovolemico)} className={`flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded border transition-colors ${isHipovolemico ? 'bg-emerald-900/30 border-emerald-500/50 text-emerald-400' : 'bg-rose-900/30 border-rose-500/50 text-rose-400'}`}>
-                    {isHipovolemico ? '✅ Déficit Real de Sódio' : '🚫 Hemodiluição / Hipervolemia'}
-                    </button>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                    <div className="bg-slate-900/50 p-3 rounded-lg border border-slate-700/50">
-                    <div className="flex justify-between items-end mb-1">
-                        <label className="text-xs font-medium text-slate-400">Na+ Atual</label>
-                        <span className="text-xl font-mono font-bold text-rose-400">{naAtual}</span>
-                    </div>
-                    <input type="range" min="100" max="134" step="1" value={naAtual} onChange={(e) => setNaAtual(Number(e.target.value))} className="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-rose-500" />
-                    </div>
-                    <div className="bg-slate-900/50 p-3 rounded-lg border border-slate-700/50">
-                    <div className="flex justify-between items-end mb-1">
-                        <label className="text-xs font-medium text-slate-400">Na+ Alvo Desejado</label>
-                        <span className="text-xl font-mono font-bold text-emerald-400">{naAlvo}</span>
-                    </div>
-                    <input type="range" min="110" max="140" step="1" value={naAlvo} onChange={(e) => setNaAlvo(Number(e.target.value))} className="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-emerald-500" />
-                    </div>
-                </div>
-                
-                <div className="flex justify-end mb-3">
-                    <div className="flex items-center gap-2">
-                        <label className="text-[10px] text-slate-400">Água Corp. Total (L):</label>
-                        <input type="number" value={aguaCor} onChange={e => setAguaCor(Number(e.target.value))} className="w-16 bg-slate-900 border border-slate-600 rounded p-1 text-sm text-white outline-none" />
-                    </div>
-                </div>
-
-                {!isHipovolemico ? (
-                    <div className="bg-rose-950/20 border border-rose-900/50 p-4 rounded-xl text-center">
-                    <p className="text-sm text-rose-300 font-semibold mb-1">Reposição Rápida Não Recomendada!</p>
-                    <p className="text-[11px] text-rose-400/80">Paciente hipervolêmico (ex: ICC, Cirrose). O foco é restrição hídrica e diuréticos.</p>
-                    </div>
-                ) : (
-                    <React.Fragment>
-                    <div className="grid grid-cols-2 gap-3 mb-3">
-                        <div className="bg-emerald-950/30 border border-emerald-900/50 p-3 rounded-xl flex flex-col justify-center">
-                        <p className="text-[10px] text-emerald-200/70 uppercase tracking-wider mb-1">Déficit de Sódio (mEq)</p>
-                        <span className="text-xl font-bold font-mono text-emerald-400">{deficitSodio.toFixed(0)} <span className="text-sm font-sans">mEq</span></span>
-                        </div>
-                        <div className="bg-emerald-950/30 border border-emerald-900/50 p-3 rounded-xl flex flex-col justify-center">
-                        <p className="text-[10px] text-emerald-200/70 uppercase tracking-wider mb-1">Vazão NaCl 3% (em 24h)</p>
-                        <span className="text-2xl font-bold font-mono text-emerald-400">{vazaoH.toFixed(1)} <span className="text-sm font-sans">mL/h</span></span>
-                        </div>
-                    </div>
-                    <div className="text-[11px] text-slate-400 bg-slate-900/50 p-2 rounded border border-slate-700/50 flex gap-2">
-                        <Info size={14} className="shrink-0 mt-0.5 text-blue-400" />
-                        <div className="space-y-1">
-                        <p className="leading-tight">A correção segura não deve exceder <strong>8-10 mEq/L em 24h</strong> para evitar Mielinólise Pontina.</p>
-                        <p className="leading-tight text-slate-500">Pela fórmula de Adrogué-Madias, 1 Litro desta solução (a 3%) elevará o Na+ do paciente em <strong>{adrogueMadias.toFixed(1)} mEq/L</strong>.</p>
-                        </div>
-                    </div>
-                    </React.Fragment>
-                )}
-                </div>
-            );
-        }
-
-        function PainelBicarbonato({ peso }) {
-            const [calcType, setCalcType] = useState('db');
-            const [baseExcess, setBaseExcess] = useState(-10);
-            const [bicAtual, setBicAtual] = useState(12);
-            const [bicAlvo, setBicAlvo] = useState(18);
-
-            const volDist = peso * 0.5;
-            let deficitMeq = 0;
-
-            if (calcType === 'db') deficitMeq = Math.abs(baseExcess) * volDist;
-            else deficitMeq = (bicAlvo - bicAtual) * volDist;
-
-            const reposicaoMeq = deficitMeq / 2;
-
-            return (
-                <div className="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-1 h-full bg-cyan-500"></div>
-                <h3 className="font-bold text-lg text-slate-100 flex items-center gap-2 mb-4">
-                    <Beaker size={20} className="text-cyan-400" /> Reposição de Bicarbonato 8,4%
-                </h3>
-
-                <div className="flex gap-2 mb-4 bg-slate-900 p-1 rounded-lg border border-slate-700">
-                    <button onClick={() => setCalcType('db')} className={`flex-1 py-1.5 text-xs font-semibold rounded transition-colors ${calcType === 'db' ? 'bg-cyan-600 text-white' : 'text-slate-400'}`}>Por Déficit Base (BE)</button>
-                    <button onClick={() => setCalcType('bic')} className={`flex-1 py-1.5 text-xs font-semibold rounded transition-colors ${calcType === 'bic' ? 'bg-cyan-600 text-white' : 'text-slate-400'}`}>Por Bic. Alvo</button>
-                </div>
-
-                <div className="space-y-4">
-                    {calcType === 'db' ? (
-                    <div className="bg-slate-900/50 p-3 rounded-lg border border-slate-700/50">
-                        <div className="flex justify-between items-end mb-1">
-                        <label className="text-xs font-medium text-slate-400">Déficit de Base (BE)</label>
-                        <span className="text-xl font-mono font-bold text-rose-400">{baseExcess}</span>
-                        </div>
-                        <input type="range" min="-30" max="-2" step="1" value={baseExcess} onChange={(e) => setBaseExcess(Number(e.target.value))} className="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-rose-500" />
-                    </div>
-                    ) : (
-                    <div className="grid grid-cols-2 gap-3 bg-slate-900/50 p-3 rounded-lg border border-slate-700/50">
-                        <div>
-                        <label className="text-xs font-medium text-slate-400 block mb-1">Bic. Atual</label>
-                        <input type="number" value={bicAtual} onChange={e => setBicAtual(Number(e.target.value))} className="w-full bg-slate-800 border border-slate-600 rounded p-1.5 text-white outline-none focus:border-cyan-500" />
-                        </div>
-                        <div>
-                        <label className="text-xs font-medium text-slate-400 block mb-1">Bic. Alvo (Seguro)</label>
-                        <input type="number" value={bicAlvo} onChange={e => setBicAlvo(Number(e.target.value))} className="w-full bg-slate-800 border border-slate-600 rounded p-1.5 text-white outline-none focus:border-cyan-500" />
-                        </div>
-                    </div>
-                    )}
-
-                    <div className="bg-cyan-950/30 border border-cyan-900/50 p-4 rounded-xl flex items-center justify-between">
-                    <div>
-                        <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">Fazer AGORA (50% do Déficit)</p>
-                        <p className="text-[10px] text-cyan-200/70">1 mEq = 1 mL de Bicarbonato 8,4%</p>
-                    </div>
-                    <span className="text-3xl font-bold font-mono text-cyan-400">{reposicaoMeq > 0 ? reposicaoMeq.toFixed(0) : 0} <span className="text-sm">mL</span></span>
-                    </div>
-
-                    <div className="text-[11px] text-amber-300 bg-amber-950/30 p-2 rounded border border-amber-900/50 flex gap-2">
-                    <AlertTriangle size={14} className="shrink-0 mt-0.5" />
-                    <p className="leading-tight">Infundir lentamente (1h a 2h) se a estabilidade hemodinâmica permitir. Risco de acidose paradoxal do LCR se feito em bolus rápido.</p>
-                    </div>
-                </div>
-                </div>
-            );
-        }
-
-        function IotPanel({ peso }) {
-            const etomMg = peso * 0.2;
-            const etomMl = etomMg / 2; 
-            const rocMg = peso * 1;
-            const rocMl = rocMg / 10; 
-            const noraMlMin = ((0.05 * peso * 60) / 80).toFixed(1);
-            const noraMlMax = ((0.1 * peso * 60) / 80).toFixed(1);
-
-            return (
-                <div className="space-y-6 max-w-3xl mx-auto animate-fade-in">
-                <div className="bg-rose-900/20 border border-rose-500/30 p-4 rounded-xl flex gap-3 items-center text-rose-200 mb-6 shadow-lg shadow-rose-900/10">
-                    <Wind className="text-rose-400 shrink-0" size={28} />
-                    <div>
-                    <h2 className="font-bold text-lg text-white">Sequência Rápida de Intubação (RSI) <span className="text-rose-400 bg-rose-950 px-2 py-0.5 rounded border border-rose-800">[CHOQUE]</span></h2>
-                    <p className="text-sm">Orientações exclusivas para pacientes instáveis. Doses automáticas para <strong className="text-rose-400">{peso} kg</strong>.</p>
-                    </div>
-                </div>
-
-                <div className="grid gap-4 md:grid-cols-2">
-                    <div className="space-y-4">
-                    <div className="bg-slate-800 border border-slate-700 rounded-xl p-4">
-                        <h3 className="font-bold text-cyan-400 mb-3 flex items-center gap-2"><span>1️⃣</span> Monitorização</h3>
-                        <ul className="text-sm text-slate-300 space-y-2 list-disc pl-5">
-                        <li>PA invasiva se possível</li>
-                        <li>Dois acessos periféricos calibrosos</li>
-                        </ul>
-                    </div>
-                    <div className="bg-slate-800 border border-slate-700 rounded-xl p-4">
-                        <h3 className="font-bold text-cyan-400 mb-3 flex items-center gap-2"><span>2️⃣</span> Pré-intubação</h3>
-                        <ul className="text-sm text-slate-300 space-y-2 list-disc pl-5">
-                        <li>VNI para preoxigenação</li>
-                        <li>Se já hipotenso: <strong>Noradrenalina 0,05 mcg/kg/min</strong> antes da indução</li>
-                        </ul>
-                    </div>
-                    </div>
-
-                    <div className="space-y-4">
-                    <div className="bg-slate-800 border-l-4 border-l-rose-500 border-t border-r border-b border-slate-700 rounded-xl p-4 shadow-lg">
-                        <h3 className="font-bold text-rose-400 mb-3 flex items-center gap-2"><span>3️⃣</span> Indução (Doses para {peso}kg)</h3>
-                        <div className="space-y-4">
-                        <div className="bg-slate-900/50 p-3 rounded border border-slate-700">
-                            <span className="block text-slate-400 text-xs uppercase tracking-wider mb-1">Etomidato (0,2 mg/kg)</span>
-                            <div className="flex items-end justify-between">
-                            <span className="text-lg font-bold text-white">{etomMg.toFixed(0)} mg</span>
-                            <span className="text-xl font-mono text-cyan-400 font-bold bg-cyan-900/20 px-2 py-1 rounded border border-cyan-800/50">Seringa: {etomMl.toFixed(1)} mL</span>
-                            </div>
-                            <span className="text-[10px] text-slate-500 block mt-1">Montada da ampola de 2mg/mL</span>
-                        </div>
-                        <div className="bg-slate-900/50 p-3 rounded border border-slate-700">
-                            <span className="block text-slate-400 text-xs uppercase tracking-wider mb-1">Rocurônio (1 mg/kg)</span>
-                            <div className="flex items-end justify-between">
-                            <span className="text-lg font-bold text-white">{rocMg.toFixed(0)} mg</span>
-                            <span className="text-xl font-mono text-cyan-400 font-bold bg-cyan-900/20 px-2 py-1 rounded border border-cyan-800/50">Seringa: {rocMl.toFixed(1)} mL</span>
-                            </div>
-                            <span className="text-[10px] text-slate-500 block mt-1">Montada da ampola de 10mg/mL</span>
-                        </div>
-                        </div>
-                    </div>
-
-                    <div className="bg-slate-800 border border-slate-700 rounded-xl p-4">
-                        <h3 className="font-bold text-amber-400 mb-3 flex items-center gap-2"><span>4️⃣</span> Plano B Imediato</h3>
-                        <ul className="text-sm text-slate-300 space-y-2 list-disc pl-5">
-                        <li>Fenilefrina 100 mcg pronta <span className="text-xs text-slate-500">(Push-dose)</span></li>
-                        <li>Epinefrina 10 mcg pronta <span className="text-xs text-slate-500">(Push-dose)</span></li>
-                        </ul>
-                    </div>
-                    </div>
-                </div>
-                </div>
-            );
-        }
-
-        function AntibioticosPanel({ clearance, setClearance, peso, setModalCrCl, isMobile }) {
-            const [categoriaFiltro, setCategoriaFiltro] = useState('Todas');
-            const categoriasUnicas = ['Todas', ...new Set(antibioticos.map(a => a.categoria))].sort();
-
-            const antibioticosFiltrados = categoriaFiltro === 'Todas' 
-                ? antibioticos 
-                : antibioticos.filter(a => a.categoria === categoriaFiltro);
-
-            const letrasIndice = [...new Set(antibioticosFiltrados.map(a => a.nome.charAt(0).toUpperCase()))].sort();
-
-            const handleScrollToLetter = (letra) => {
-                const element = document.getElementById(`atb-${letra}`);
-                if (element) element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            };
-
-            return (
-                <div className="flex flex-col w-full animate-fade-in">
-                <div className="bg-slate-800/80 p-4 rounded-xl border border-slate-700/80 mb-4 sticky top-0 z-10 backdrop-blur-md shadow-lg flex flex-col gap-3">
-                    <div className="flex justify-between items-center mb-1">
-                    <h2 className="text-slate-200 font-bold flex items-center gap-2">
-                        <Pill size={16} className="text-blue-400"/> Antibióticos
-                    </h2>
-                    </div>
-
-                    <div className="flex gap-2 items-center bg-slate-900/50 p-2 rounded-lg border border-slate-700/50">
-                    <span className="text-[11px] text-slate-400 uppercase font-bold tracking-wider">TFG:</span>
-                    <select value={clearance} onChange={(e) => setClearance(e.target.value)} className="flex-1 bg-slate-900 border border-slate-600 rounded p-1.5 text-cyan-400 text-xs font-bold outline-none cursor-pointer focus:border-cyan-500">
-                        <option value=">50">{'>'} 50 mL/min</option><option value="10-50">10-50 mL/min</option><option value="<10">{'<'} 10 mL/min</option><option value="HD">Hemodiálise (HD)</option><option value="CAPD">CAPD</option><option value="CRRT">CRRT</option>
-                    </select>
-                    <button onClick={() => setModalCrCl(true)} className="bg-slate-700/80 hover:bg-cyan-900/80 border border-slate-600 px-2 py-1.5 rounded text-slate-300 hover:text-cyan-400 transition flex items-center gap-1 text-[10px] font-semibold">
-                      <Calculator size={12} /> Calc
-                    </button>
-                    </div>
-
-                    <div className="relative mt-1">
-                    <Filter size={14} className="absolute left-2.5 top-2.5 text-slate-400" />
-                    <select value={categoriaFiltro} onChange={(e) => setCategoriaFiltro(e.target.value)} className="w-full bg-slate-900 border border-slate-600 text-slate-200 text-sm rounded-lg p-2 pl-8 outline-none appearance-none focus:border-blue-500">
-                        {categoriasUnicas.map(cat => <option key={cat} value={cat}>{cat}</option>)}
-                    </select>
-                    </div>
-
-                    <div className="flex flex-wrap gap-1 mt-1">
-                    {letrasIndice.map(letra => (
-                        <button key={letra} onClick={() => handleScrollToLetter(letra)} className="flex-1 min-w-[28px] py-1 text-xs font-bold text-slate-300 bg-slate-700 hover:bg-blue-600 hover:text-white rounded border border-slate-600 transition-colors text-center shadow-sm">
-                        {letra}
-                        </button>
-                    ))}
-                    </div>
-                </div>
-
-                <div className="space-y-4 pb-8">
-                    {antibioticosFiltrados.length === 0 ? (
-                    <div className="text-center p-6 text-slate-500 text-sm border border-slate-700 rounded-lg border-dashed">Nenhum fármaco encontrado.</div>
-                    ) : (
-                    antibioticosFiltrados.map((atb, index) => {
-                        const primeiraLetraAtual = atb.nome.charAt(0).toUpperCase();
-                        const primeiraLetraAnterior = index > 0 ? antibioticosFiltrados[index - 1].nome.charAt(0).toUpperCase() : '';
-                        const mostrarAncora = primeiraLetraAtual !== primeiraLetraAnterior;
-
-                        return (
-                        <div key={atb.nome}>
-                            {mostrarAncora && (
-                            <div id={`atb-${primeiraLetraAtual}`} className="pt-2 pb-1">
-                                <span className="text-xs font-bold text-slate-500 bg-slate-800 px-2 py-0.5 rounded-full border border-slate-700">{primeiraLetraAtual}</span>
-                            </div>
-                            )}
-                            <AntibioticCard atb={atb} clearance={clearance} peso={peso} />
-                        </div>
-                        );
-                    })
-                    )}
-                </div>
-                </div>
-            );
-        }
-
-        function CrClModal({ onClose, setClearance, peso }) {
-            const [idade, setIdade] = useState(65);
-            const [cr, setCr] = useState(1.0);
-            const [sexo, setSexo] = useState('M');
-
-            const calcularEAplicar = () => {
-                if (!idade || !cr || !peso) return;
-                let cg = ((140 - idade) * peso) / (72 * cr);
-                if (sexo === 'F') cg *= 0.85;
-                
-                if (cg >= 50) setClearance('>50');
-                else if (cg >= 10) setClearance('10-50');
-                else setClearance('<10');
-
-                onClose();
-            };
-
-            return (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in">
-                <div className="bg-slate-800 border border-slate-600 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
-                    <div className="flex justify-between items-center p-4 border-b border-slate-700 bg-slate-800/50">
-                    <h2 className="font-bold text-slate-100 flex items-center gap-2"><Calculator size={18} className="text-cyan-400"/> Cockcroft-Gault</h2>
-                    <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors"><X size={20}/></button>
-                    </div>
-                    <div className="p-6 space-y-6">
-                    <div>
-                        <div className="flex justify-between text-sm text-slate-400 mb-2"><span>Creatinina Sérica</span><span className="font-bold text-slate-200">{cr.toFixed(1)} mg/dL</span></div>
-                        <input type="range" min="0.3" max="12.0" step="0.1" value={cr} onChange={e => setCr(Number(e.target.value))} className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-cyan-500" />
-                    </div>
-                    <div>
-                        <div className="flex justify-between text-sm text-slate-400 mb-2"><span>Idade</span><span className="font-bold text-slate-200">{idade} anos</span></div>
-                        <input type="range" min="18" max="100" step="1" value={idade} onChange={e => setIdade(Number(e.target.value))} className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-cyan-500" />
-                    </div>
-                    <div>
-                        <label className="block text-sm text-slate-300 mb-2">Sexo Biológico</label>
-                        <div className="flex bg-slate-900 rounded p-1 border border-slate-700">
-                        <button onClick={() => setSexo('M')} className={`flex-1 py-2 text-sm font-semibold rounded transition-colors ${sexo === 'M' ? 'bg-cyan-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'}`}>Masculino</button>
-                        <button onClick={() => setSexo('F')} className={`flex-1 py-2 text-sm font-semibold rounded transition-colors ${sexo === 'F' ? 'bg-pink-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'}`}>Feminino</button>
-                        </div>
-                    </div>
-                    <div className="pt-2">
-                        <button onClick={calcularEAplicar} className="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-xl font-bold transition-colors shadow-lg shadow-blue-500/20">Aplicar na Aba de ATBs</button>
-                    </div>
-                    </div>
-                </div>
-                </div>
-            );
-        }
-
-        function resolveDose(doseObj, peso, ampolaMg) {
-            if (!doseObj) return <span className="text-slate-500 text-sm">Não recomendado / Sem dados</span>;
-            
-            if (typeof doseObj === 'string') {
-                return (
-                <div className="flex flex-col">
-                    <span className="text-sm text-cyan-400 font-bold leading-relaxed whitespace-pre-line">{doseObj}</span>
-                </div>
-                );
-            }
-
-            let calc = 0;
-            let isCapped = false;
-            let isFixed = false;
-
-            if (doseObj.doseFixa) {
-                calc = doseObj.doseFixa;
-                isFixed = true;
-            } else {
-                calc = doseObj.val * peso;
-                if (doseObj.max && calc > doseObj.max) {
-                calc = doseObj.max;
-                isCapped = true;
-                }
-            }
-
-            const unid = doseObj.unid || 'mg';
-            calc = Math.round(calc);
-            const calcStr = calc.toLocaleString('pt-BR');
-
-            let ampolasStr = '';
-            if (ampolaMg && (unid === 'mg' || unid === 'UI')) {
-                const qtdAmpolas = (calc / ampolaMg);
-                const formattedQtd = Number.isInteger(qtdAmpolas) ? qtdAmpolas : qtdAmpolas.toFixed(1);
-                
-                let ampLabel = ampolaMg >= 1000000 ? `${ampolaMg/1000000}M UI` : `${ampolaMg}${unid}`;
-                if (ampolaMg === 4500) ampLabel = '4,5g';
-                if (ampolaMg === 1000) ampLabel = '1g';
-                if (ampolaMg === 1500) ampLabel = '1,5g';
-                if (ampolaMg === 2000) ampLabel = '2g';
-                if (ampolaMg === 2500) ampLabel = '2,5g';
-                if (ampolaMg === 3000) ampLabel = '3g';
-
-                ampolasStr = `${formattedQtd} FA/Bolsa de ${ampLabel}`;
-            }
-
-            return (
-                <div className="flex flex-col">
-                <div className="flex items-baseline gap-1">
-                    <span className="text-sm text-cyan-400 font-bold">{calcStr}{unid}</span>
-                    {!isFixed && <span className="text-slate-400 font-normal text-[10px]">({doseObj.val}{unid}/kg)</span>}
-                    <span className="ml-1 text-cyan-200 text-xs font-semibold">{doseObj.freq}</span>
-                </div>
-                {(ampolasStr || isCapped) && (
-                    <div className="mt-1 flex flex-col gap-1 items-start">
-                    {ampolasStr && <span className="text-[10px] text-emerald-300 bg-emerald-900/40 px-1.5 py-0.5 rounded border border-emerald-800">{ampolasStr}</span>}
-                    {isCapped && <span className="text-[10px] text-rose-400 bg-rose-900/30 px-1.5 py-0.5 rounded border border-rose-800">🔺 DOSE TETO ALCANÇADA</span>}
-                    </div>
-                )}
-                </div>
-            );
-        }
-
-        function AntibioticCard({ atb, clearance, peso }) {
-            const resolvedElement = resolveDose(atb.doses[clearance], peso, atb.amp);
-            return (
-                <div className="bg-slate-800 border border-slate-700 rounded-xl p-3 flex flex-col transition hover:border-slate-600 shadow-sm mt-2 animate-fade-in">
-                <div className="flex justify-between items-start mb-1">
-                    <div className="flex items-center gap-2"><Pill size={14} className="text-blue-400" /><h3 className="font-semibold text-sm text-slate-100">{atb.nome}</h3></div>
-                    <span className="text-[9px] text-slate-400 uppercase tracking-wider bg-slate-900 px-1.5 py-0.5 rounded border border-slate-700">{atb.classe}</span>
-                </div>
-                <div className="bg-slate-900/80 border border-cyan-500/30 rounded p-2.5 mt-2 flex items-center flex-wrap gap-1">
-                    {resolvedElement}
-                </div>
-                <div className="mt-2 flex flex-col gap-1.5 border-t border-slate-700/50 pt-2">
-                    {atb.diluicao && (
-                    <div className="text-[10px] text-slate-500 flex items-start gap-1.5"><Droplet size={11} className="shrink-0 mt-[2px] text-cyan-600/80" /><span className="leading-tight">{atb.diluicao} {atb.via && <span className="ml-1 text-rose-300/80 font-semibold tracking-wide">• {atb.via}</span>}</span></div>
-                    )}
-                    {atb.obs && (
-                    <div className="text-[10px] text-slate-500 flex items-start gap-1.5"><Info size={11} className="shrink-0 mt-[2px] text-slate-600" /><span className="leading-tight">{atb.obs}</span></div>
-                    )}
-                </div>
-                </div>
-            );
-        }
-
-        function DrugCard({ droga, peso }) {
-            const chavesDiluicao = Object.keys(droga.diluicoes);
-            const defaultDil = chavesDiluicao.includes('simples') ? 'simples' : chavesDiluicao[0];
-            
-            const [dilAtualKey, setDilAtualKey] = useState(defaultDil);
-            const [dose, setDose] = useState(droga.padrao);
-            const [mlh, setMlh] = useState(0);
-
-            const dilAtualObj = droga.diluicoes[dilAtualKey];
-            const isMgDia = droga.unidade === 'mg/dia';
-            const isFixedInfusion = droga.unidade === 'fixa';
-
-            const calcMlhFromDose = (d, w, conc) => {
-                if (droga.id === 'azulmetileno') return 500 / 6; 
-                if (droga.unidade === 'mcg/kg/min') return (d * w * 60) / conc;
-                if (droga.unidade === 'mcg/min' || droga.unidade === 'UI/min' || droga.unidade === 'mg/min') return (d * 60) / conc;
-                if (droga.unidade === 'mg/kg/h' || droga.unidade === 'mcg/kg/h') return (d * w) / conc;
-                if (droga.unidade === 'mEq/h' || droga.unidade === 'mmol/h' || droga.unidade === 'g/h') return d / conc;
-                return 0;
-            };
-            
-            const calcDoseFromMlh = (v, w, conc) => {
-                if (droga.id === 'azulmetileno') return droga.padrao;
-                if (droga.unidade === 'mcg/kg/min') return (v * conc) / (w * 60);
-                if (droga.unidade === 'mcg/min' || droga.unidade === 'UI/min' || droga.unidade === 'mg/min') return (v * conc) / 60;
-                if (droga.unidade === 'mg/kg/h' || droga.unidade === 'mcg/kg/h') return (v * conc) / w;
-                if (droga.unidade === 'mEq/h' || droga.unidade === 'mmol/h' || droga.unidade === 'g/h') return v * conc;
-                return 0;
-            };
-
-            const maxMlh = (isMgDia || isFixedInfusion) ? 0 : calcMlhFromDose(droga.max, peso, dilAtualObj.conc);
-
-            const handleDoseChange = (val) => {
-                const d = parseFloat(val);
-                setDose(d);
-                if(!isMgDia && !isFixedInfusion) setMlh(calcMlhFromDose(d, peso, dilAtualObj.conc));
-            };
-            
-            const handleMlhChange = (val) => {
-                if(isMgDia || isFixedInfusion) return;
-                const v = parseFloat(val);
-                setMlh(v);
-                setDose(calcDoseFromMlh(v, peso, dilAtualObj.conc));
-            };
-
-            useEffect(() => { 
-                if(!isMgDia && !isFixedInfusion) setMlh(calcMlhFromDose(dose, peso, dilAtualObj.conc)); 
-            }, [peso, dilAtualKey]);
-
-            const getColorProfile = (val) => {
-                if(!droga.limites) return { nome: 'Dose', corTxt: 'text-cyan-400', corBg: 'bg-cyan-500/20', corSlider: 'accent-cyan-500', icon: '🔹' };
-                const [l1, l2, l3] = droga.limites;
-                if (val < l1) return { nome: 'Baixa', corTxt: 'text-blue-400', corBg: 'bg-blue-500/20', corSlider: 'accent-blue-500', icon: '🔹' };
-                if (val < l2) return { nome: 'Padrão', corTxt: 'text-emerald-400', corBg: 'bg-emerald-500/20', corSlider: 'accent-emerald-500', icon: '✅' };
-                if (val < l3) return { nome: 'Alta', corTxt: 'text-amber-400', corBg: 'bg-amber-500/20', corSlider: 'accent-amber-500', icon: '🔸' };
-                return { nome: 'Teto', corTxt: 'text-red-500', corBg: 'bg-red-500/20', corSlider: 'accent-red-600', icon: '🔺' };
-            };
-
-            const perfil = getColorProfile(dose);
-            const alertasAtivos = droga.alertas ? droga.alertas.filter(a => dose >= a.doseMin) : [];
-
-            return (
-                <div className={`bg-slate-800 border border-slate-700 rounded-xl shadow-lg transition-colors flex flex-col h-full relative animate-fade-in`}>
-                <div className={`px-4 py-2 flex justify-between items-center text-xs font-bold tracking-wider uppercase border-b border-slate-700/50 rounded-t-xl ${perfil.corBg}`}>
-                    <span className="text-slate-300">{droga.classe}</span>
-                    <span className={perfil.corTxt}>{perfil.icon} {perfil.nome}</span>
-                </div>
-                
-                <div className="p-4 flex flex-col flex-1">
-                    <h3 className="font-semibold text-lg text-slate-100 mb-2">{droga.nome}</h3>
-                    
-                    {chavesDiluicao.length > 1 && (
-                    <div className="flex gap-1 mb-3 bg-slate-900 p-1 rounded-lg border border-slate-700">
-                        {chavesDiluicao.map(key => (
-                        <button 
-                            key={key} onClick={() => setDilAtualKey(key)}
-                            className={`flex-1 py-1.5 text-[11px] font-semibold rounded transition-colors flex justify-center items-center gap-1 ${dilAtualKey === key ? 'bg-cyan-600 text-white shadow' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'}`}
-                        >
-                            {key === 'rhp' && <RefreshCcw size={10} />}
-                            {droga.diluicoes[key].nome}
-                        </button>
-                        ))}
-                    </div>
-                    )}
-
-                    <div className="text-sm text-slate-400 mb-3 flex flex-col gap-1 bg-slate-800/50 p-2 rounded border border-slate-700/50">
-                    <div className="flex items-center gap-2"><Droplet size={14} className="text-cyan-500 shrink-0"/> <span className="font-mono text-xs">{dilAtualObj.texto}</span></div>
-                    {dilAtualObj.conc > 0 && (
-                        <div className="flex items-center gap-3 ml-5 mt-0.5">
-                        <span className="text-[10px] text-slate-500">Conc: <strong className="text-slate-300">{dilAtualObj.conc.toFixed(1).replace(/\.0$/, '')}</strong> {droga.unidade.split('/')[0]}/mL</span>
-                        {dilAtualObj.via && <span className="text-[10px] text-slate-500 flex items-center gap-1 border-l border-slate-600 pl-3"><Syringe size={10} className="text-rose-400/80"/> Via: <strong className="text-slate-300">{dilAtualObj.via}</strong></span>}
-                        </div>
-                    )}
-                    </div>
-
-                    <div className="bg-slate-900/50 p-3 rounded-lg border border-slate-700/50 flex flex-col gap-3 mt-auto">
-                    
-                    {/* DOSAGENS PADRÃO COM CONTROLES */}
-                    {!isMgDia && !isFixedInfusion && (
-                        <div>
-                        <div className="flex justify-between items-end mb-1">
-                            <div>
-                            <label className="text-[11px] font-medium text-slate-400 block mb-1">Alvo ({droga.unidade})</label>
-                            <div className="flex gap-1 flex-wrap">
-                                {droga.botoes && droga.botoes.map(b => (
-                                <button key={b} onClick={() => handleDoseChange(b)} className={`text-[10px] px-2 py-0.5 rounded border transition-colors ${dose === b ? 'border-cyan-500 bg-cyan-900/30 text-cyan-400' : 'border-slate-600 bg-slate-800 text-slate-400 hover:bg-slate-700'}`}>{b}</button>
-                                ))}
-                            </div>
-                            </div>
-                            <span className={`text-2xl font-mono font-bold leading-none ${perfil.corTxt}`}>{dose.toFixed(3).replace(/\.?0+$/, '')}</span>
-                        </div>
-                        <input type="range" min={droga.min} max={droga.max} step={droga.step} value={dose} onChange={(e) => handleDoseChange(e.target.value)} className={`w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer mt-1 ${perfil.corSlider}`} />
-                        </div>
-                    )}
-
-                    {!isMgDia && !isFixedInfusion && (
-                        <>
-                        <div className="h-px bg-slate-700/50 w-full relative flex justify-center items-center"><Zap size={12} className="text-slate-500 absolute bg-slate-800/80 px-1 w-6 h-4 rounded-full" /></div>
-                        <div>
-                            <div className="flex justify-between items-end mb-1">
-                            <label className="text-[11px] font-medium text-slate-400">Bomba (mL/h)</label>
-                            <span className="text-2xl font-mono font-bold text-slate-100 leading-none">{mlh.toFixed(1)}</span>
-                            </div>
-                            <input type="range" min="0" max={maxMlh} step="0.1" value={mlh} onChange={(e) => handleMlhChange(e.target.value)} className={`w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer mt-1 ${perfil.corSlider}`} />
-                        </div>
-                        </>
-                    )}
-
-                    {/* ESTADO ESPECIAL: DESLANOSÍDEO (Apenas Quantidade de Ampolas) */}
-                    {isMgDia && (
-                        <div className="bg-slate-800/50 p-2 rounded-lg border border-slate-700 mt-2">
-                        <div className="flex justify-between items-end mb-1">
-                            <label className="text-[11px] font-medium text-slate-400">Prescrever nas 24h</label>
-                            <span className="text-2xl font-mono font-bold text-emerald-400 leading-none">
-                            {(dose / 0.2).toFixed(1)} <span className="text-sm text-slate-500">Ampolas</span>
-                            </span>
-                        </div>
-                        <p className="text-[10px] text-slate-500 mt-2">Corresponde a <strong className="text-emerald-300">{((dose / 0.2) * 2).toFixed(1)} mL</strong> da solução padrão. Fracionar em bolus IV lento.</p>
-                        </div>
-                    )}
-
-                    {/* ESTADO ESPECIAL: AZUL DE METILENO (Vazão Fixa 6h) */}
-                    {isFixedInfusion && (
-                        <div className="bg-slate-800/50 p-3 rounded-lg border border-slate-700 mt-2">
-                        <div className="flex justify-between items-end mb-1">
-                            <label className="text-[11px] font-medium text-slate-400">Vazão Fixa na BIC</label>
-                            <span className="text-2xl font-mono font-bold text-cyan-400 leading-none">
-                            83.3 <span className="text-sm text-slate-500">mL/h</span>
-                            </span>
-                        </div>
-                        <p className="text-[10px] text-slate-500 mt-2">Vazão calculada matematicamente para infundir 500 mL em exatamente 6 horas.</p>
-                        </div>
-                    )}
-                    </div>
-
-                    {alertasAtivos.length > 0 && (
-                    <div className="mt-3 space-y-2">
-                        {alertasAtivos.map((alerta, idx) => {
-                        const estilo = { info: 'text-blue-300 bg-blue-950/40 border-blue-900/50', warning: 'text-amber-300 bg-amber-950/40 border-amber-900/50', danger: 'text-red-300 bg-red-950/40 border-red-900/50', critical: 'text-rose-200 bg-rose-950/60 border-rose-800/70' }[alerta.tipo] || 'text-slate-300 bg-slate-800';
-                        const Icone = { info: Info, warning: AlertTriangle, danger: AlertTriangle, critical: AlertOctagon }[alerta.tipo] || Info;
-                        return (
-                            <div key={idx} className={`flex gap-2 items-start text-[11px] p-2 rounded border animate-in fade-in zoom-in-95 duration-200 ${estilo}`}>
-                            <Icone size={14} className="shrink-0 mt-0.5 opacity-80" />
-                            <p className="leading-tight">{alerta.texto}</p>
-                            </div>
-                        );
-                        })}
-                    </div>
-                    )}
-                </div>
-                </div>
-            );
-        }
-
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
-    </script>
+<body class="flex flex-col min-h-screen custom-scrollbar">
+<!-- HEADER GLOBAL -->
+<header class="bg-slate-800 border-b border-slate-700 sticky top-0 z-40 shadow-md shrink-0">
+<div class="max-w-[1400px] mx-auto p-4 pb-2">
+<div class="flex items-center justify-between mb-4">
+<div class="flex items-center gap-2">
+<svg class="text-cyan-400 w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+<h1 class="text-xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+Calculadora UTI
+</h1>
+</div>
+<span class="text-xs text-slate-400 bg-slate-900 px-2 py-1 rounded-full border border-slate-700">v19.3 Vanilla JS RHP</span>
+</div>
+<!-- CONTROLE DE PESO GLOBAL -->
+<div class="bg-slate-900/50 p-4 rounded-xl border border-slate-700">
+<div class="flex justify-between items-end mb-2">
+<label class="text-sm font-semibold text-slate-300">Peso do Paciente</label>
+<span class="text-2xl font-mono text-cyan-400"><span id="val-peso-global">60</span> <span class="text-sm text-slate-500">kg</span></span>
+</div>
+<input type="range" id="slider-peso" min="30" max="150" value="60" class="w-full h-2 rounded-lg appearance-none cursor-pointer">
+</div>
+</div>
+<!-- NAVEGAÇÃO POR ABAS -->
+<div class="max-w-[1400px] mx-auto px-4 flex overflow-x-auto scrollbar-hide border-t border-slate-700/50" id="tabs-container">
+<button onclick="setTab('VASOATIVOS')" data-tab="VASOATIVOS" class="tab-btn px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 border-cyan-400 text-cyan-400">VASOATIVOS</button>
+<button onclick="setTab('INOTRÓPICOS')" data-tab="INOTRÓPICOS" class="tab-btn px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 border-transparent text-slate-400 hover:text-slate-200">INOTRÓPICOS</button>
+<button onclick="setTab('SEDOANALGESIA')" data-tab="SEDOANALGESIA" class="tab-btn px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 border-transparent text-slate-400 hover:text-slate-200">SEDOANALGESIA</button>
+<button onclick="setTab('ARRITMIA')" data-tab="ARRITMIA" class="tab-btn px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 border-transparent text-slate-400 hover:text-slate-200">ARRITMIA</button>
+<button onclick="setTab('DHE')" data-tab="DHE" class="tab-btn px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 border-transparent text-slate-400 hover:text-slate-200">DHE</button>
+<button onclick="setTab('ANTIBIÓTICOS')" data-tab="ANTIBIÓTICOS" class="tab-btn px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 border-transparent text-slate-400 hover:text-slate-200 lg:hidden">ANTIBIÓTICOS</button>
+<button onclick="setTab('IOT')" data-tab="IOT" class="tab-btn px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 border-transparent text-slate-400 hover:text-slate-200">IOT</button>
+</div>
+</header>
+<!-- CONTEÚDO PRINCIPAL -->
+<main class="max-w-[1400px] mx-auto p-4 pb-20 w-full flex-1 flex flex-col lg:flex-row gap-6 items-start">
+<div class="flex-1 w-full" id="main-content">
+<!-- Os cards de fármacos serão inseridos aqui via JS -->
+</div>
+<!-- PAINEL LATERAL DE ANTIBIÓTICOS (DESKTOP) -->
+<div id="side-atb-container" class="hidden lg:flex flex-col w-[420px] shrink-0 border-l border-slate-800 pl-6 sticky top-[180px] self-start max-h-[calc(100vh-200px)] overflow-y-auto custom-scrollbar pr-2">
+<!-- Painel de ATB injetado aqui -->
+</div>
+</main>
+<!-- MODAL COCKCROFT-GAULT -->
+<div id="modal-crcl" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+<div class="bg-slate-800 border border-slate-600 rounded-2xl w-full max-w-md shadow-2xl p-6 space-y-6">
+<div class="flex justify-between items-center border-b border-slate-700 pb-3">
+<h3 class="font-bold text-slate-100 flex items-center gap-2">
+<svg class="w-5 h-5 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16" y1="14" y2="18"/></svg>
+Cockcroft-Gault
+</h3>
+<button onclick="toggleModalCrCl(false)" class="text-slate-400 hover:text-white">×</button>
+</div>
+<div>
+<div class="flex justify-between text-sm text-slate-400 mb-1">
+<span>Creatinina Sérica</span>
+<span id="crcl-cr-val" class="font-bold text-slate-200">1.0 mg/dL</span>
+</div>
+<input type="range" id="crcl-cr" min="0.3" max="10.0" step="0.1" value="1.0" class="w-full">
+</div>
+<div>
+<div class="flex justify-between text-sm text-slate-400 mb-1">
+<span>Idade</span>
+<span id="crcl-idade-val" class="font-bold text-slate-200">65 anos</span>
+</div>
+<input type="range" id="crcl-idade" min="18" max="100" step="1" value="65" class="w-full">
+</div>
+<div>
+<label class="block text-sm text-slate-300 mb-2">Sexo Biológico</label>
+<div class="flex bg-slate-900 rounded p-1 border border-slate-700">
+<button id="btn-sexo-m" onclick="setSexoBiologico('M')" class="flex-1 py-1.5 text-xs font-semibold rounded bg-cyan-600 text-white">Masculino</button>
+<button id="btn-sexo-f" onclick="setSexoBiologico('F')" class="flex-1 py-1.5 text-xs font-semibold rounded text-slate-400">Feminino</button>
+</div>
+</div>
+<button onclick="aplicarCrCl()" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-xl font-bold transition shadow-lg">Aplicar na TFG</button>
+</div>
+</div>
+<!-- JAVASCRIPT NATIVO (SEM DEPENDÊNCIAS EXTERNAS) -->
+<script>
+// ESTADO GLOBAL DA APLICAÇÃO
+let state = {
+peso: 60,
+abaAtual: 'VASOATIVOS',
+clearance: '>50',
+crclIdade: 65,
+crclCr: 1.0,
+crclSexo: 'M',
+drogas: {},
+filtroCat: 'Todas'
+};
+// BASE DE DADOS OFICIAL RHP
+const drogasVasoativas = [
+{
+id: 'noradrenalina', nome: 'Noradrenalina', classe: 'VASOPRESSOR', unidade: 'mcg/kg/min',
+min: 0.01, max: 2, step: 0.01, padrao: 0.1, limites: [0.1, 0.5, 1.0], botoes: [0.05, 0.1, 0.3, 0.5],
+diluicoes: {
+simples: { nome: 'Simples', texto: '4 amp (16mg) + 234 mL SG 5%', conc: 64, via: 'CVC Preferencial' },
+rhp: { nome: 'RHP', texto: '5 amp (4mL - 1mg/mL) + 180 mL SF 0.9%', conc: 100, via: 'CVC Obrigatório' }
+},
+alertas: [
+{ doseMin: 0.3, tipo: 'warning', texto: 'Suspender dieta entérica (Risco de isquemia mesentérica).' },
+{ doseMin: 0.5, tipo: 'danger', texto: 'Dose elevada. Considerar resgate (Vasopressina).' },
+{ doseMin: 1.0, tipo: 'critical', texto: 'Choque refratário. Risco iminente de necrose digital.' }
+]
+},
+{
+id: 'adrenalina', nome: 'Adrenalina', classe: 'VASOPRESSOR', unidade: 'mcg/kg/min',
+min: 0.01, max: 0.5, step: 0.01, padrao: 0.05, limites: [0.05, 0.1, 0.3], botoes: [0.02, 0.05, 0.1, 0.2],
+diluicoes: {
+simples: { nome: 'Simples', texto: '6 amp (6mg) + 94 mL SF 0.9%', conc: 60, via: 'CVC Preferencial' },
+rhp: { nome: 'RHP', texto: '10 amp (10mg) + 90 mL SF 0.9%', conc: 100, via: 'CVC Obrigatório' }
+},
+alertas: [
+{ doseMin: 0.1, tipo: 'warning', texto: 'Efeito agonista Alfa predomina. Risco de hiperlactatemia isquêmica.' }
+]
+},
+{
+id: 'vasopressina', nome: 'Vasopressina', classe: 'VASOPRESSOR', unidade: 'UI/min',
+min: 0.01, max: 0.06, step: 0.005, padrao: 0.03, limites: [0.03, 0.04, 0.05], botoes: [0.03, 0.04],
+diluicoes: {
+simples: { nome: 'Simples', texto: '1 amp (20UI) + 100 mL SF 0.9%', conc: 0.2, via: 'CVC' },
+conc: { nome: 'Conc.', texto: '2 amp (40UI) + 100 mL SF 0.9%', conc: 0.4, via: 'CVC' }
+},
+alertas: [
+{ doseMin: 0.041, tipo: 'danger', texto: 'Doses > 0.04 UI/min aumentam risco de isquemia miocárdica/intestinal.' }
+]
+},
+{
+id: 'dopamina', nome: 'Dopamina', classe: 'VASOPRESSOR', unidade: 'mcg/kg/min',
+min: 1, max: 20, step: 0.5, padrao: 5.0, limites: [5.0, 10.0, 15.0], botoes: [2.5, 5.0, 10.0, 15.0],
+diluicoes: {
+simples: { nome: 'Simples', texto: '5 amp (250mg) + 200 mL SG 5%', conc: 1000, via: 'CVC' },
+rhp: { nome: 'RHP', texto: '10 amp (500mg) + 150 mL SF 0.9%', conc: 2000, via: 'CVC' }
+},
+alertas: [
+{ doseMin: 10.0, tipo: 'danger', texto: 'Efeito Alfa predominante. Elevado risco de taquiarritmias.' }
+]
+},
+{
+id: 'nitroglicerina', nome: 'Nitroglicerina (Tridil)', classe: 'VASODILATADOR', unidade: 'mcg/min',
+min: 5, max: 200, step: 5, padrao: 10, limites: [20, 50, 100], botoes: [10, 20, 50, 100],
+diluicoes: {
+simples: { nome: 'Padrão', texto: '1 amp (50mg) + 240 mL SG 5%', conc: 200, via: 'AVP / CVC' }
+},
+alertas: [
+{ doseMin: 0.0, tipo: 'info', texto: 'Dose independente do peso (mcg/min). Titular conforme PA.' },
+{ doseMin: 100.0, tipo: 'warning', texto: 'Doses altas. Considerar tolerância medicamentosa (taquifilaxia) se uso > 24h.' }
+]
+},
+{
+id: 'nipride', nome: 'Nitroprussiato', classe: 'VASODILATADOR', unidade: 'mcg/kg/min',
+min: 0.1, max: 10, step: 0.1, padrao: 2.0, limites: [2.0, 5.0, 8.0], botoes: [0.5, 2.0, 5.0, 10.0],
+diluicoes: {
+simples: { nome: 'Padrão', texto: '1 amp (50mg) + 248 mL SG 5%', conc: 200, via: 'CVC' }
+},
+alertas: [
+{ doseMin: 2.0, tipo: 'warning', texto: 'Risco de toxicidade por cianeto. Monitorizar gasometria.' },
+{ doseMin: 9.0, tipo: 'danger', texto: 'Dose teto permitida por no máximo 10 minutos.' }
+]
+},
+{
+id: 'azulmetileno', nome: 'Azul de Metileno 1%', classe: 'VASOPRESSOR / RESGATE', unidade: 'fixa',
+min: 1, max: 1, step: 1, padrao: 1, limites: [0, 2, 3], botoes: [],
+diluicoes: {
+simples: { nome: 'Padrão RHP', texto: '2 amp (1%) + 500 mL SF 0.9%', conc: 0, via: 'AVP / CVC' }
+},
+alertas: [
+{ doseMin: 0.0, tipo: 'info', texto: 'Infusão Única e Fixa: Independe do peso.' },
+{ doseMin: 0.0, tipo: 'warning', texto: 'Correr a solução em BIC por 6 horas (1x ao dia).' }
+]
+}
+];
+const inotropicos = [
+{
+id: 'dobutamina', nome: 'Dobutamina', classe: 'INOTRÓPICO', unidade: 'mcg/kg/min',
+min: 1, max: 20, step: 0.5, padrao: 5.0, limites: [5.0, 10.0, 15.0], botoes: [2.5, 5.0, 10.0, 15.0],
+diluicoes: {
+simples: { nome: 'Simples', texto: '1 amp (250mg) + 230 mL SG 5%', conc: 1000, via: 'AVP / CVC' },
+rhp: { nome: 'RHP', texto: '2 amp (500mg) + 210 mL SG 5%', conc: 2000, via: 'CVC Preferencial' },
+conc: { nome: 'Concentrado', texto: '2 amp (500mg) + 100 mL SG 5%', conc: 3571.4, via: 'CVC Obrigatório' }
+},
+alertas: [
+{ doseMin: 15.0, tipo: 'danger', texto: 'Benefício atinge platô. Risco excessivo de isquemia miocárdica.' }
+]
+},
+{
+id: 'milrinona', nome: 'Milrinona', classe: 'INOTRÓPICO / VASODILATADOR', unidade: 'mcg/kg/min',
+min: 0.1, max: 2.5, step: 0.01, padrao: 0.5, limites: [0.375, 0.75, 2.5], botoes: [0.25, 0.5, 0.75, 2.5],
+diluicoes: { simples: { nome: 'Padrão', texto: '2 amp (20mg) + 80 mL SF 0.9%', conc: 200, via: 'AVP / CVC' } },
+alertas: [
+{ doseMin: 0.0, tipo: 'info', texto: 'Ajuste Renal (ClCr < 30): Iniciar com 0.25 mcg/kg/min.' },
+{ doseMin: 0.76, tipo: 'danger', texto: 'Doses elevadas (>0.75) aumentam risco de arritmias ventriculares.' }
+]
+},
+{
+id: 'levo', nome: 'Levosimendana', classe: 'SENSIBILIZADOR CÁLCIO', unidade: 'mcg/kg/min',
+min: 0.05, max: 0.2, step: 0.01, padrao: 0.1, limites: [0.1, 0.15, 0.18], botoes: [0.05, 0.1, 0.2],
+diluicoes: { simples: { nome: 'Padrão', texto: '1 amp (12.5mg) + 500 mL SG 5%', conc: 25, via: 'AVP / CVC' } },
+alertas: [
+{ doseMin: 0.0, tipo: 'info', texto: 'Dose Padrão: 0.1 (24% do peso em mL/h). Manter por 24h.' },
+{ doseMin: 0.2, tipo: 'danger', texto: 'Dose máxima. Risco de hipotensão profunda (meia-vida de 80h).' }
+]
+},
+{
+id: 'deslanosideo', nome: 'Deslanosídeo (Cedilanide)', classe: 'INOTRÓPICO', unidade: 'mg/dia',
+min: 0.2, max: 2.0, step: 0.2, padrao: 0.6, limites: [0.6, 1.2, 1.6], botoes: [0.4, 0.6, 1.0, 1.6],
+diluicoes: { simples: { nome: 'Padrão', texto: 'Ampola 0,2mg/mL (2mL). EV direta ou IM.', conc: 0.2, via: 'AVP / IM' } },
+alertas: [
+{ doseMin: 0.0, tipo: 'info', texto: 'Ajuste Renal: Reduzir dose na mesma proporção da queda do ClCr.' },
+{ doseMin: 0.8, tipo: 'warning', texto: 'Digitalização rápida (1.6mg máx fracionado). Manutenção: 0.2 a 0.6 mg/dia.' }
+]
+}
+];
+const sedoanalgesia = [
+{
+id: 'fentanil', nome: 'Fentanil', classe: 'ANALGESIA', unidade: 'mcg/kg/h',
+min: 0.5, max: 10, step: 0.1, padrao: 3.0, limites: [2.0, 5.0, 8.0], botoes: [1.0, 3.0, 5.0, 10.0],
+diluicoes: {
+simples: { nome: 'Simples', texto: '2 amp (1000mcg) + 80 mL SF 0.9%', conc: 20, via: 'AVP / CVC' },
+rhp: { nome: 'RHP', texto: 'Puro (50 mcg/mL)', conc: 50, via: 'AVP / CVC' }
+},
+alertas: [{ doseMin: 5.0, tipo: 'warning', texto: 'Meia-vida contexto-sensitiva alta. Risco de íleo paralítico.' }]
+},
+{
+id: 'morfina', nome: 'Morfina Injetável', classe: 'ANALGESIA', unidade: 'mg/kg/h',
+min: 0.01, max: 0.5, step: 0.01, padrao: 0.05, limites: [0.05, 0.15, 0.3], botoes: [0.05, 0.1, 0.2, 0.5],
+diluicoes: {
+simples: { nome: 'Padrão', texto: '2 amp (20mg) + 80 mL SF 0.9%', conc: 0.2, via: 'AVP / CVC' },
+conc: { nome: 'Conc.', texto: '5 amp (50mg) + 50 mL SF 0.9%', conc: 1.0, via: 'AVP / CVC' }
+},
+alertas: [{ doseMin: 0.3, tipo: 'warning', texto: 'Infusão contínua alta. Risco de depressão respiratória.' }]
+},
+{
+id: 'midazolam', nome: 'Midazolam', classe: 'SEDAÇÃO', unidade: 'mg/kg/h',
+min: 0.05, max: 0.5, step: 0.01, padrao: 0.3, limites: [0.1, 0.3, 0.4], botoes: [0.1, 0.2, 0.3, 0.5],
+diluicoes: {
+simples: { nome: 'Simples', texto: '10 amp (150mg) + 120 mL SG 5%', conc: 1, via: 'AVP / CVC' },
+rhp: { nome: 'RHP', texto: '4 amp (200mg) + 60 mL SF 0.9%', conc: 2, via: 'AVP / CVC' }
+},
+alertas: [{ doseMin: 0.15, tipo: 'warning', texto: 'Acúmulo de metabólito ativo na disfunção renal/hepática.' }]
+},
+{
+id: 'propofol', nome: 'Propofol (Puro)', classe: 'SEDAÇÃO', unidade: 'mg/kg/h',
+min: 0.3, max: 4.5, step: 0.1, padrao: 1.5, limites: [1.5, 3.0, 4.0], botoes: [0.5, 1.5, 3.0, 4.0],
+diluicoes: { simples: { nome: 'Padrão', texto: 'Puro 1% (10 mg/mL)', conc: 10, via: 'CVC Preferencial' } },
+alertas: [{ doseMin: 4.0, tipo: 'danger', texto: 'Risco de Síndrome de Infusão do Propofol (PRIS) se > 48h.' }]
+},
+{
+id: 'tiopental', nome: 'Tiopental', classe: 'SEDAÇÃO / NEUROPROTEÇÃO', unidade: 'mg/kg/h',
+min: 1, max: 5, step: 0.5, padrao: 2.0, limites: [2.0, 3.0, 4.0], botoes: [1.0, 2.0, 3.0, 5.0],
+diluicoes: { simples: { nome: 'Padrão', texto: '1 FA (1g) + 100 mL SF 0.9%', conc: 10, via: 'CVC Obrigatório' } },
+alertas: [{ doseMin: 4.0, tipo: 'danger', texto: 'Risco elevado de hipotensão profunda, imunossupressão e acúmulo adiposo.' }]
+},
+{
+id: 'dexmed', nome: 'Dexmedetomidina', classe: 'SEDAÇÃO LEVE', unidade: 'mcg/kg/h',
+min: 0.1, max: 1.5, step: 0.1, padrao: 0.4, limites: [0.4, 0.8, 1.2], botoes: [0.2, 0.4, 0.7, 1.0],
+diluicoes: {
+simples: { nome: 'Padrão', texto: '1 amp (200mcg) + 48 mL SF 0.9%', conc: 4, via: 'AVP / CVC' },
+rhp: { nome: 'RHP', texto: '2 amp (400mcg) + 100 mL SF 0.9%', conc: 4, via: 'AVP / CVC' }
+},
+alertas: [{ doseMin: 0.8, tipo: 'warning', texto: 'Riscos hemodinâmicos superam benefício sedativo. Bradicardia frequente.' }]
+},
+{
+id: 'cetamina', nome: 'Cetamina', classe: 'ANALGESIA / DISSOCIATIVO', unidade: 'mg/kg/h',
+min: 0.1, max: 2.0, step: 0.1, padrao: 0.5, limites: [0.5, 1.0, 1.5], botoes: [0.2, 0.5, 1.0, 1.5],
+diluicoes: {
+simples: { nome: 'Padrão', texto: '1 amp (500mg) + 250 mL SF 0.9%', conc: 2, via: 'AVP / CVC' },
+rhp: { nome: 'RHP', texto: '1 FA (500mg) + 90 mL SF 0.9%', conc: 5, via: 'AVP / CVC' }
+},
+alertas: []
+},
+{
+id: 'atracurio', nome: 'Atracúrio', classe: 'BNM', unidade: 'mg/kg/h',
+min: 0.2, max: 1.0, step: 0.1, padrao: 0.4, limites: [0.4, 0.6, 0.8], botoes: [0.3, 0.4, 0.5, 0.6],
+diluicoes: { simples: { nome: 'Padrão', texto: '4 amp (200mg) + 200 mL SF 0.9%', conc: 1, via: 'AVP / CVC' } },
+alertas: [{ doseMin: 0.6, tipo: 'warning', texto: 'Eliminação por via de Hofmann (independe de ClCr ou disfunção hepática).' }]
+}
+];
+const arritmia = [
+{
+id: 'amio_manut', nome: 'Amiodarona (Manutenção)', classe: 'ANTIARRÍTMICO', unidade: 'mg/min',
+min: 0.2, max: 1.5, step: 0.1, padrao: 1.0, limites: [0.5, 1.0, 1.2], botoes: [0.5, 1.0],
+diluicoes: {
+simples: { nome: 'Padrão', texto: '6 amp (900mg) + 250 mL SG 5%', conc: 3.6, via: 'CVC Preferencial' },
+rhp: { nome: 'RHP', texto: '4 amp (600mg) + 250 mL SG 5% (Correr em 24h)', conc: 2.4, via: 'CVC' }
+},
+alertas: [{ doseMin: 1.0, tipo: 'warning', texto: 'Risco de hipotensão grave (solvente) e bradicardia.' }]
+},
+{
+id: 'xilocaina', nome: 'Xilocaína 2% sem Vasoc.', classe: 'ANTIARRÍTMICO', unidade: 'mg/min',
+min: 1.0, max: 4.0, step: 0.5, padrao: 2.0, limites: [1.0, 2.0, 3.0], botoes: [1.0, 2.0, 3.0, 4.0],
+diluicoes: { simples: { nome: 'Padrão', texto: '1 FA (1000mg) + 200 mL SG 5%', conc: 4.0, via: 'AVP / CVC' } },
+alertas: [{ doseMin: 3.0, tipo: 'warning', texto: 'Observar neurotoxicidade (parestesia, abalos, convulsão).' }]
+},
+{
+id: 'esmolol', nome: 'Esmolol', classe: 'ANTIARRÍTMICO / BB', unidade: 'mcg/kg/min',
+min: 50, max: 300, step: 10, padrao: 50, limites: [100, 200, 250], botoes: [50, 100, 200, 300],
+diluicoes: { simples: { nome: 'Padrão', texto: '1 FA (2,5g) + 240 mL SG 5%', conc: 10000, via: 'CVC Preferencial' } },
+alertas: [{ doseMin: 200.0, tipo: 'warning', texto: 'Ataque: 500 mcg/kg em 1 minuto. Monitorar hipotensão induzida.' }]
+},
+{
+id: 'magnesio', nome: 'Sulfato de Magnésio 10%', classe: 'ANTIARRÍTMICO / DHE', unidade: 'g/h',
+min: 0.5, max: 4.0, step: 0.5, padrao: 1.0, limites: [1.0, 2.0, 3.0], botoes: [0.5, 1.0, 2.0, 4.0],
+diluicoes: {
+conc20: { nome: 'SG 20mg/mL', texto: '2 amp (2g) + 100 mL SG 5%', conc: 0.02, via: 'AVP / CVC' },
+conc8: { nome: 'SG 8mg/mL', texto: '2 amp (2g) + 250 mL SG 5%', conc: 0.008, via: 'AVP / CVC' }
+},
+alertas: [{ doseMin: 1.5, tipo: 'warning', texto: 'Em Torsades de Pointes: fazer 1 a 2g em bolus de 15 minutos.' }]
+}
+];
+const dheDrogas = [
+{
+id: 'kcl_central', nome: 'Cloreto de Potássio 19,1% (CVC)', classe: 'REPOSIÇÃO K+', unidade: 'mEq/h',
+min: 5, max: 40, step: 1, padrao: 10, limites: [10, 20, 30], botoes: [10, 20, 30],
+diluicoes: { simples: { nome: 'Padrão', texto: '1 amp (25 mEq) + 250 mL SF 0.9%', conc: 0.1, via: 'CVC Exclusivo' } },
+alertas: [{ doseMin: 20.0, tipo: 'danger', texto: 'Velocidade alta. Monitorização eletrocardiográfica contínua obrigatória.' }]
+},
+{
+id: 'kcl_perif', nome: 'Cloreto de Potássio 19,1% (AVP)', classe: 'REPOSIÇÃO K+', unidade: 'mEq/h',
+min: 2, max: 15, step: 1, padrao: 5, limites: [5, 8, 10], botoes: [5, 8, 10],
+diluicoes: { simples: { nome: 'Padrão', texto: '1 amp (25 mEq) + 500 mL SF 0.9%', conc: 0.05, via: 'AVP (Máx 60mEq/L)' } },
+alertas: [{ doseMin: 10.0, tipo: 'warning', texto: 'Limite teto para veia periférica. Elevado risco de flebite química.' }]
+},
+{
+id: 'calcio_gluconato', nome: 'Gluconato de Cálcio 10%', classe: 'REPOSIÇÃO Ca2+', unidade: 'g/h',
+min: 0.5, max: 2.0, step: 0.5, padrao: 1.0, limites: [1.0, 1.5, 2.0], botoes: [0.5, 1.0, 2.0],
+diluicoes: { simples: { nome: 'Padrão', texto: '1 amp (1g) + 100 mL SG 5%', conc: 0.01, via: 'AVP / CVC' } },
+alertas: [{ doseMin: 0.0, tipo: 'info', texto: 'Infundir lentamente. Risco de necrose cutânea em caso de extravasamento periférico.' }]
+}
+];
+const antibioticos = [
+{ nome: 'Aciclovir', categoria: 'Antivirais', classe: 'Antiviral', amp: 250, diluicao: '50-100mL (SF/SG) • Infusão: 1h', via: 'AVP / CVC', obs: 'Em diálise, fazer dose após a sessão.', doses: { '>50': { val: 10, max: 800, freq: '8/8h' }, '10-50': { val: 10, max: 800, freq: '12/12h a 24/24h' }, '<10': { val: 5, max: 400, freq: '24/24h' }, 'HD': { val: 5, max: 400, freq: '24/24h (Após)' }, 'CAPD': { val: 5, max: 400, freq: '24/24h' }, 'CRRT': { val: 7.5, max: 800, freq: '24/24h' } } },
+{ nome: 'Amicacina', categoria: 'Aminoglicosídeos', classe: 'Aminoglicosídeo', amp: 500, diluicao: '100-200mL (SF/SG) • Infusão: 30-60min', via: 'AVP / CVC', obs: 'Dose calculada idealmente por Peso Ajustado.', doses: { '>50': { val: 15, max: 1500, freq: '24/24h' }, '10-50': { val: 7.5, max: 750, freq: '24/24h' }, '<10': { val: 7.5, max: 750, freq: '48/48h' }, 'HD': { val: 7.5, max: 750, freq: '48/48h (Após)' }, 'CAPD': '10 a 20mg/L dialisado perdido', 'CRRT': { val: 7.5, max: 750, freq: '24/24h' } } },
+{ nome: 'Amoxicilina-clavulanato', categoria: 'Penicilinas', classe: 'Penicilina + IBL', amp: 1000, diluicao: '50-100mL (SF) • Infusão: 3-30min', via: 'AVP / CVC', obs: 'Reforço 500mg após HD', doses: { '>50': '500mg a 1g 8/8h', '10-50': { doseFixa: 500, freq: '12/12h' }, '<10': { doseFixa: 500, freq: '24/24h' }, 'HD': { doseFixa: 500, freq: '24/24h (Após)' }, 'CAPD': { doseFixa: 250, freq: '12/12h' }, 'CRRT': 'Sem dados' } },
+{ nome: 'Ampicilina', categoria: 'Penicilinas', classe: 'Penicilina', amp: 1000, diluicao: '100mL (SF) • Infusão: 30min', via: 'AVP / CVC', doses: { '>50': '1 a 2g 6/6h', '10-50': '1 a 2g 6/6h a 12/12h', '<10': '1 a 2g 12/12h a 24/24h', 'HD': '1 a 2g 12/12h (Após)', 'CAPD': { doseFixa: 250, freq: '12/12h' }, 'CRRT': '1 a 2g 6/6h' } },
+{ nome: 'Ampicilina-sulbactam', categoria: 'Penicilinas', classe: 'Penicilina + IBL', amp: 3000, diluicao: '50-100mL (SF/SG) • Infusão: 30min', via: 'AVP / CVC', doses: { '>50': { doseFixa: 3000, freq: '6/6h' }, '10-50': '3g 8/8h a 12/12h', '<10': { doseFixa: 3000, freq: '24/24h' }, 'HD': { doseFixa: 3000, freq: '24/24h (Após)' }, 'CAPD': { doseFixa: 3000, freq: '24/24h' }, 'CRRT': '1,5g a 3g 12/12h' } },
+{ nome: 'Anfotericina B (Convencional)', categoria: 'Antifúngicos', classe: 'Antifúngico', amp: 50, diluicao: '250-500mL (SG) • Infusão: 4-6h', via: 'CVC Preferencial', obs: 'Não compatível com SF 0.9%.', doses: { '>50': { val: 1, max: 100, freq: '24/24h' }, '10-50': { val: 1, max: 100, freq: '24/24h' }, '<10': { val: 1, max: 100, freq: '24/24h' }, 'HD': { val: 1, max: 100, freq: '24/24h' }, 'CAPD': { val: 1, max: 100, freq: '24/24h' }, 'CRRT': { val: 1, max: 100, freq: '24/24h' } } },
+{ nome: 'Anfotericina B (Lipídica)', categoria: 'Antifúngicos', classe: 'Antifúngico', amp: 50, diluicao: '200-250mL (SG) • Infusão: 2h', via: 'CVC Preferencial', obs: 'Não diluir em SF 0.9%. Sem correção pela TFG.', doses: { '>50': { val: 5, max: 500, freq: '24/24h' }, '10-50': { val: 5, max: 500, freq: '24/24h' }, '<10': { val: 5, max: 500, freq: '24/24h' }, 'HD': { val: 5, max: 500, freq: '24/24h' }, 'CAPD': { val: 5, max: 500, freq: '24/24h' }, 'CRRT': { val: 5, max: 500, freq: '24/24h' } } },
+{ nome: 'Cefazolina', categoria: 'Cefalosporinas', classe: 'Cefalosporina 1ªG', amp: 1000, diluicao: '50-100mL (SF/SG) • Infusão: 30min', via: 'AVP / CVC', obs: 'Reforço 500mg a 1g após HD', doses: { '>50': '1 a 2g 8/8h', '10-50': '1 a 2g 12/12h', '<10': '1 a 2g 24/24h a 48/48h', 'HD': '1 a 2g 24/24h a 48/48h (Após)', 'CAPD': { doseFixa: 500, freq: '12/12h' }, 'CRRT': '1 a 2g 12/12h' } },
+{ nome: 'Cefepime', categoria: 'Cefalosporinas', classe: 'Cefalosporina 4ªG', amp: 1000, diluicao: '50-100mL (SF/SG) • Infusão: 3-30min', via: 'AVP / CVC', obs: 'Reforço 1g após HD', doses: { '>50': '2g 12/12h ou 1-2g 8/8h', '10-50': '1 a 2g 12/12h a 24/24h', '<10': { doseFixa: 1000, freq: '24/24h' }, 'HD': { doseFixa: 1000, freq: '24/24h (Após)' }, 'CAPD': '1 a 2g 48/48h', 'CRRT': '2g 12/12h a 24/24h' } },
+{ nome: 'Ceftazidima', categoria: 'Cefalosporinas', classe: 'Cefalosporina 3ªG', amp: 1000, diluicao: '50-100mL (SF/SG) • Infusão: 3-60min', via: 'AVP / CVC', obs: 'Reforço 1g após HD', doses: { '>50': '1 a 2g 8/8h', '10-50': '1 a 2g 12/12h a 24/24h', '<10': '2g 24/24h a 48/48h', 'HD': '2g 24/24h a 48/48h (Após)', 'CAPD': { doseFixa: 500, freq: '24/24h' }, 'CRRT': '1 a 2g 12/12h a 24/24h' } },
+{ nome: 'Ceftriaxona', categoria: 'Cefalosporinas', classe: 'Cefalosporina 3ªG', amp: 1000, diluicao: '50-100mL (SF/SG) • Infusão: 2-30min', via: 'AVP / CVC', obs: 'Excreção biliar predominante. Dose máxima 4g/dia.', doses: { '>50': '1 a 2g 12/12h a 24/24h', '10-50': '1 a 2g 12/12h a 24/24h', '<10': '1 a 2g 12/12h a 24/24h', 'HD': '1 a 2g 12/12h', 'CAPD': '1 a 2g 12/12h', 'CRRT': '1 a 2g 12/12h' } },
+{ nome: 'Ciprofloxacino', categoria: 'Quinolonas', classe: 'Quinolona', amp: 400, diluicao: 'Bag Pronta (SF/SG) • Infusão: 1h', via: 'AVP / CVC', doses: { '>50': { doseFixa: 400, freq: '12/12h' }, '10-50': { doseFixa: 200, freq: '12/12h' }, '<10': { doseFixa: 200, freq: '12/12h' }, 'HD': { doseFixa: 200, freq: '12/12h' }, 'CAPD': { doseFixa: 200, freq: '8/8h' }, 'CRRT': { doseFixa: 400, freq: '12/12h' } } },
+{ nome: 'Fluconazol', categoria: 'Antifúngicos', classe: 'Antifúngico', amp: 200, diluicao: 'Bag Pronta (SF/SG) • Infusão: 1-2h', via: 'AVP / CVC', doses: { '>50': { doseFixa: 400, freq: '24/24h' }, '10-50': 'Reduzir dose em 50%', '<10': { doseFixa: 200, freq: '24/24h' }, 'HD': { doseFixa: 400, freq: '24/24h' }, 'CAPD': 'Não usar', 'CRRT': '400-800mg 24/24h' } },
+{ nome: 'Meropenem', categoria: 'Carbapenêmicos', classe: 'Carbapenêmico', amp: 1000, diluicao: '50-250mL (SF/SG) • Infusão: 3h', via: 'AVP / CVC', obs: 'Reforço 500mg após HD', doses: { '>50': { doseFixa: 1000, freq: '8/8h' }, '10-50': { doseFixa: 1000, freq: '12/12h' }, '<10': '500mg 24/24h ou 1g 12/12h', 'HD': { doseFixa: 500, freq: '24/24h' }, 'CAPD': { doseFixa: 500, freq: '24/24h' }, 'CRRT': { doseFixa: 1000, freq: '12/12h' } } },
+{ nome: 'Piperacilina-Tazobactam', categoria: 'Penicilinas', classe: 'Penicilina + IBL', amp: 4500, diluicao: '50-100mL (SF/SG) • Infusão: 3h', via: 'AVP / CVC', doses: { '>50': { doseFixa: 4500, freq: '6/6h' }, '10-50': { doseFixa: 4500, freq: '8/8h' }, '<10': { doseFixa: 2250, freq: '8/8h' }, 'HD': { doseFixa: 2250, freq: '8/8h' }, 'CAPD': { doseFixa: 2250, freq: '8/8h' }, 'CRRT': { doseFixa: 4500, freq: '8/8h' } } },
+{ nome: 'Polimixina B', categoria: 'Outros', classe: 'Polimixina', amp: 500000, diluicao: '300-500mL (SG) • Infusão: 1 a 1.5h', via: 'CVC Preferencial', obs: 'Sem ajuste renal. Ataque: 20-25mil UI/kg.', doses: { '>50': { val: 15000, unid: 'UI', freq: '12/12h (Manut)', max: 1500000 }, '10-50': { val: 15000, unid: 'UI', freq: '12/12h (Manut)', max: 1500000 }, '<10': { val: 15000, unid: 'UI', freq: '12/12h (Manut)', max: 1500000 }, 'HD': { val: 15000, unid: 'UI', freq: '12/12h (Manut)', max: 1500000 }, 'CAPD': { val: 15000, unid: 'UI', freq: '12/12h (Manut)', max: 1500000 }, 'CRRT': { val: 15000, unid: 'UI', freq: '12/12h (Manut)', max: 1500000 } } },
+{ nome: 'Vancomicina', categoria: 'Glicopeptídeos/Lipopeptídeos', classe: 'Glicopeptídeo', amp: 500, diluicao: '100-200mL (SF/SG) • Infusão: 1-2h', via: 'CVC Preferencial', obs: 'Ataque: 25-30mg/kg sempre. Ideal dosar nível sérico.', doses: { '>50': { val: 15, max: 2000, freq: '12/12h' }, '10-50': '15mg/kg 24/24h a 96/96h', '<10': '15mg/Kg a cada 4 a 7 dias', 'HD': { val: 15, max: 2000, freq: '48/48h (Após)' }, 'CAPD': { val: 15, max: 2000, freq: '48/48h' }, 'CRRT': { val: 15, max: 2000, freq: '24/24h' } } }
+];
+// INICIALIZADOR DE FÁRMACOS
+function initDrogasState() {
+const todas = [...drogasVasoativas, ...inotropicos, ...sedoanalgesia, ...arritmia, ...dheDrogas];
+todas.forEach(d => {
+const keys = Object.keys(d.diluicoes);
+state.drogas[d.id] = {
+dose: d.padrao,
+dilKey: keys.includes('rhp') ? 'rhp' : (keys.includes('simples') ? 'simples' : keys[0])
+};
+});
+}
+// CÁLCULOS MATEMÁTICOS DE BIC
+function calcMlh(droga, dose, peso, conc) {
+if (droga.id === 'azulmetileno') return 83.3;
+if (droga.unidade === 'mcg/kg/min') return (dose * peso * 60) / conc;
+if (droga.unidade === 'mcg/min' || droga.unidade === 'UI/min' || droga.unidade === 'mg/min') return (dose * 60) / conc;
+if (droga.unidade === 'mg/kg/h' || droga.unidade === 'mcg/kg/h') return (dose * peso) / conc;
+if (droga.unidade === 'mEq/h' || droga.unidade === 'g/h') return dose / conc;
+return 0;
+}
+function calcDoseFromMlh(droga, mlh, peso, conc) {
+if (droga.id === 'azulmetileno') return droga.padrao;
+if (droga.unidade === 'mcg/kg/min') return (mlh * conc) / (peso * 60);
+if (droga.unidade === 'mcg/min' || droga.unidade === 'UI/min' || droga.unidade === 'mg/min') return (mlh * conc) / 60;
+if (droga.unidade === 'mg/kg/h' || droga.unidade === 'mcg/kg/h') return (mlh * conc) / peso;
+if (droga.unidade === 'mEq/h' || droga.unidade === 'g/h') return mlh * conc;
+return 0;
+}
+// RENDERIZADOR DE CARD DE INFUSÃO
+function renderDrugCard(d) {
+const dState = state.drogas[d.id];
+const dilObj = d.diluicoes[dState.dilKey];
+const isMgDia = d.unidade === 'mg/dia';
+const isFixed = d.unidade === 'fixa';
+const mlh = calcMlh(d, dState.dose, state.peso, dilObj.conc);
+const maxMlh = isMgDia || isFixed ? 0 : calcMlh(d, d.max, state.peso, dilObj.conc);
+// Perfil de cores
+let perfil = { txt: 'text-cyan-400', bg: 'bg-cyan-500/20', nome: 'Dose' };
+if (d.limites) {
+const [l1, l2, l3] = d.limites;
+if (dState.dose < l1) perfil = { txt: 'text-blue-400', bg: 'bg-blue-500/20', nome: 'Baixa' };
+else if (dState.dose < l2) perfil = { txt: 'text-emerald-400', bg: 'bg-emerald-500/20', nome: 'Padrão' };
+else if (dState.dose < l3) perfil = { txt: 'text-amber-400', bg: 'bg-amber-500/20', nome: 'Alta' };
+else perfil = { txt: 'text-red-500', bg: 'bg-red-500/20', nome: 'Teto' };
+}
+// Alertas
+const alertas = (d.alertas || []).filter(a => dState.dose >= a.doseMin);
+// Botoes de diluição
+const dilKeys = Object.keys(d.diluicoes);
+let dilHtml = '';
+if (dilKeys.length > 1) {
+dilHtml = ⁠<div class="flex gap-1 mb-3 bg-slate-900 p-1 rounded-lg border border-slate-700"> ${dilKeys.map(k => ⁠
+<button onclick="setDiluicao('${d.id}', '${k}')" class="flex-1 py-1.5 text-[11px] font-semibold rounded ${dState.dilKey === k ? 'bg-cyan-600 text-white' : 'text-slate-400 hover:text-slate-200'}">
+${d.diluicoes[k].nome}
+</button>
+⁠).join('')} </div>⁠;
+}
+return ⁠<div class="bg-slate-800 border border-slate-700 rounded-xl shadow-lg flex flex-col h-full overflow-hidden"> <div class="px-4 py-2 flex justify-between items-center text-xs font-bold tracking-wider uppercase border-b border-slate-700/50 ${perfil.bg}"> <span class="text-slate-300">${d.classe}</span> <span class="${perfil.txt}">${perfil.nome}</span> </div> <div class="p-4 flex flex-col flex-1"> <h3 class="font-semibold text-lg text-slate-100 mb-2">${d.nome}</h3> ${dilHtml} <div class="text-sm text-slate-400 mb-3 bg-slate-800/50 p-2 rounded border border-slate-700/50"> <div class="font-mono text-xs text-cyan-300">${dilObj.texto}</div> ${dilObj.conc > 0 ?⁠<div class="text-[10px] text-slate-500 mt-1">Conc: <strong class="text-slate-300">{dilObj.conc.toFixed(1).replace(/\\.0/, '')}</strong>￼{dilObj.via}</strong></div>` : ''}
+</div>
+<div class="bg-slate-900/50 p-3 rounded-lg border border-slate-700/50 flex flex-col gap-3 mt-auto">
+{!isMgDia && !isFixed ? `
+￼
+￼
+￼
+￼
+￼
+${(d.botoes || []).map(b => `<button onclick="setDoseDirect('${d.id}', ${b})" class="text-[10px] px-2 py-0.5 rounded border border-slate-600 bg-slate-800 text-slate-300 hover:bg-slate-700">{b}</button>⁠).join('')} </div> </div> <span class="text-2xl font-mono font-bold ${perfil.txt}">${dState.dose.toFixed(3).replace(/\\.?0+$/, '')}</span> </div> <input type="range" min="${d.min}" max="${d.max}" step="${d.step}" value="${dState.dose}" oninput="handleDoseChange('${d.id}', this.value)" class="w-full mt-2"> </div> <div class="h-px bg-slate-700/50 w-full"></div> <div> <div class="flex justify-between items-end mb-1"> <label class="text-[11px] font-medium text-slate-400">Bomba (mL/h)</label> <span class="text-2xl font-mono font-bold text-slate-100">${mlh.toFixed(1)}</span> </div> <input type="range" min="0" max="${maxMlh}" step="0.1" value="${mlh}" oninput="handleMlhChange('${d.id}', this.value)" class="w-full mt-1"> </div> ⁠ : ''}
+${isMgDia ? ⁠<div class="bg-slate-800/50 p-2 rounded-lg border border-slate-700"> <div class="flex justify-between items-end"> <label class="text-[11px] font-medium text-slate-400">Prescrever nas 24h</label> <span class="text-2xl font-mono font-bold text-emerald-400">${(dState.dose / 0.2).toFixed(1)} <span class="text-sm">Ampolas</span></span> </div> <p class="text-[10px] text-slate-500 mt-2">Corresponde a <strong class="text-emerald-300">${((dState.dose / 0.2) * 2).toFixed(1)} mL</strong> da solução. Fracionar em bolus EV lento.</p> </div>⁠ : ''}
+${isFixed ? ⁠<div class="bg-slate-800/50 p-3 rounded-lg border border-slate-700"> <div class="flex justify-between items-end"> <label class="text-[11px] font-medium text-slate-400">Vazão Fixa na BIC</label> <span class="text-2xl font-mono font-bold text-cyan-400">83.3 <span class="text-sm">mL/h</span></span> </div> <p class="text-[10px] text-slate-500 mt-2">Vazão calculada matematicamente para infundir 500 mL em exatamente 6 horas.</p> </div>⁠ : ''}
+</div>
+{alertas.length > 0 ? `
+￼
+${alertas.map(a => `<div class="text-[11px] p-2 rounded border bg-amber-950/40 border-amber-900/50 text-amber-300 leading-tight">{a.texto}</div>⁠).join('')} </div> ⁠ : ''}
+</div>
+</div>`;
+}
+// RENDERIZADOR DO PAINEL DE ANTIBIÓTICOS
+function renderAntibioticosHtml() {
+const filtrados = state.filtroCat === 'Todas'
+? antibioticos
+: antibioticos.filter(a => a.categoria === state.filtroCat);
+const cats = ['Todas', ...new Set(antibioticos.map(a => a.categoria))].sort();
+return `
+<div class="flex flex-col w-full">
+<div class="bg-slate-800 p-4 rounded-xl border border-slate-700 mb-4 sticky top-0 z-10 shadow-lg flex flex-col gap-3">
+<div class="flex justify-between items-center">
+<h2 class="text-slate-200 font-bold flex items-center gap-2">💊 Antibióticos RHP</h2>
+<button onclick="toggleModalCrCl(true)" class="bg-slate-700 hover:bg-cyan-900 border border-slate-600 px-2 py-1 rounded text-slate-300 text-xs font-semibold">Calc CrCl</button>
+</div>
+<div class="flex gap-2 items-center bg-slate-900/50 p-2 rounded-lg border border-slate-700/50">
+<span class="text-[11px] text-slate-400 uppercase font-bold">TFG:</span>
+<select onchange="setClearance(this.value)" class="flex-1 bg-slate-900 border border-slate-600 rounded p-1.5 text-cyan-400 text-xs font-bold outline-none">
+<option value=">50" ${state.clearance === '>50' ? 'selected' : ''}>> 50 mL/min</option>
+<option value="10-50" ${state.clearance === '10-50' ? 'selected' : ''}>10-50 mL/min</option>
+<option value="<10" ${state.clearance === '<10' ? 'selected' : ''}>< 10 mL/min</option>
+<option value="HD" ${state.clearance === 'HD' ? 'selected' : ''}>Hemodiálise (HD)</option>
+<option value="CAPD" ${state.clearance === 'CAPD' ? 'selected' : ''}>CAPD</option>
+<option value="CRRT" ${state.clearance === 'CRRT' ? 'selected' : ''}>CRRT</option>
+</select>
+</div>
+<select onchange="setFiltroCat(this.value)" class="w-full bg-slate-900 border border-slate-600 text-slate-200 text-sm rounded-lg p-2 outline-none">
+${cats.map(c => ⁠<option value="${c}" ${state.filtroCat === c ? 'selected' : ''}>${c}</option>⁠).join('')}
+</select>
+</div>
+<div class="space-y-4 pb-8">
+${filtrados.map(atb => {
+const doseObj = atb.doses[state.clearance];
+let doseTxt = '';
+if (!doseObj) doseTxt = 'Sem dados / Não recomendado';
+else if (typeof doseObj === 'string') doseTxt = doseObj;
+else if (doseObj.doseFixa) doseTxt = ⁠${doseObj.doseFixa}mg${doseObj.freq}⁠;
+else {
+let total = Math.round(doseObj.val * state.peso);
+if (doseObj.max && total > doseObj.max) total = doseObj.max;
+doseTxt = ⁠${total}${doseObj.unid \vert{}\vert{} 'mg'} (${doseObj.val}${doseObj.unid \vert{}\vert{} 'mg'}/kg)${doseObj.freq}⁠;
+}
+return ⁠<div class="bg-slate-800 border border-slate-700 rounded-xl p-3 shadow-sm"> <div class="flex justify-between items-start mb-1"> <h3 class="font-semibold text-sm text-slate-100">${atb.nome}</h3> <span class="text-[9px] text-slate-400 uppercase bg-slate-900 px-1.5 py-0.5 rounded border border-slate-700">${atb.classe}</span> </div> <div class="bg-slate-900/80 border border-cyan-500/30 rounded p-2.5 mt-2"> <span class="text-sm text-cyan-400 font-bold">${doseTxt}</span> </div> <div class="mt-2 text-[10px] text-slate-500 border-t border-slate-700/50 pt-2 space-y-1"> <div>${atb.diluicao || ''} • <strong class="text-rose-300">${atb.via \vert{}\vert{} ''}</strong></div>${atb.obs ?⁠<div class="text-slate-400">${atb.obs}</div>⁠ : ''} </div> </div>⁠;
+}).join('')}
+</div>
+</div>`;
+}
+// RENDERIZADOR DO PAINEL DE DHE
+function renderDheHtml() {
+return `
+<div class="space-y-6">
+<!-- SÓDIO -->
+<div class="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg relative">
+<h3 class="font-bold text-lg text-slate-100 mb-3 flex items-center gap-2">🌊 Hiponatremia (Salina 3%)</h3>
+<div class="grid grid-cols-2 gap-4 mb-4">
+<div class="bg-slate-900/50 p-3 rounded-lg border border-slate-700/50">
+<label class="text-xs text-slate-400">Na+ Atual</label>
+<input type="number" id="na-atual" value="115" onchange="renderApp()" class="w-full bg-slate-800 rounded p-1 text-white font-mono mt-1">
+</div>
+<div class="bg-slate-900/50 p-3 rounded-lg border border-slate-700/50">
+<label class="text-xs text-slate-400">Na+ Alvo Desejado</label>
+<input type="number" id="na-alvo" value="125" onchange="renderApp()" class="w-full bg-slate-800 rounded p-1 text-white font-mono mt-1">
+</div>
+</div>
+<div id="dhe-sodio-res" class="bg-emerald-950/30 border border-emerald-900/50 p-3 rounded-xl flex justify-between items-center text-emerald-400">
+<!-- Calculado dinamicamente -->
+</div>
+</div>
+<!-- CARDS DE K+ E CA2+ -->
+<div class="grid gap-6 md:grid-cols-2">
+${dheDrogas.map(d => renderDrugCard(d)).join('')}
+</div>
+</div>`;
+}
+// RENDERIZADOR DO PAINEL DE IOT
+function renderIotHtml() {
+const etomMg = (state.peso * 0.2).toFixed(0);
+const etomMl = (state.peso * 0.2 / 2).toFixed(1);
+const rocMg = (state.peso * 1.0).toFixed(0);
+const rocMl = (state.peso * 1.0 / 10).toFixed(1);
+return `
+<div class="space-y-6 max-w-3xl mx-auto">
+<div class="bg-rose-900/20 border border-rose-500/30 p-4 rounded-xl text-rose-200 shadow-lg">
+<h2 class="font-bold text-lg text-white">Sequência Rápida de Intubação (RSI) [CHOQUE]</h2>
+<p class="text-sm">Doses calculadas automaticamente para <strong class="text-rose-400">${state.peso} kg</strong>.</p>
+</div>
+<div class="grid gap-4 md:grid-cols-2">
+<div class="bg-slate-800 border-l-4 border-l-rose-500 p-4 rounded-xl space-y-4">
+<h3 class="font-bold text-rose-400">Indução Imediata</h3>
+<div class="bg-slate-900/50 p-3 rounded border border-slate-700">
+<span class="text-xs text-slate-400 block mb-1">Etomidato (0,2 mg/kg)</span>
+<div class="flex justify-between items-end">
+<span class="text-lg font-bold text-white">${etomMg} mg</span>
+<span class="text-lg font-mono text-cyan-400 font-bold bg-cyan-900/30 px-2 py-1 rounded">Seringa: ￼
+￼
+￼
+￼
+￼
+￼
+￼
+￼{rocMg} mg</span>
+<span class="text-lg font-mono text-cyan-400 font-bold bg-cyan-900/30 px-2 py-1 rounded">Seringa: ${rocMl} mL</span>
+</div>
+<span class="text-[10px] text-slate-500 block mt-1">Ampola 10 mg/mL pura</span>
+</div>
+</div>
+<div class="bg-slate-800 p-4 rounded-xl space-y-3 text-sm text-slate-300">
+<h3 class="font-bold text-amber-400">Vasopressor de Resgate (Push-Dose)</h3>
+<div class="bg-slate-900/50 p-3 rounded border border-slate-700 space-y-1 text-xs">
+<strong class="text-cyan-300">Epinefrina (10 mcg/mL):</strong>
+<p>1 mL da ampola (1mg) em 100 mL de SF. Fazer bolus de 0.5 a 2 mL (5 a 20 mcg).</p>
+</div>
+<div class="bg-slate-900/50 p-3 rounded border border-slate-700 space-y-1 text-xs">
+<strong class="text-cyan-300">Noradrenalina de Partida:</strong>
+<p>Iniciar a 0.05 mcg/kg/min antes de induzir se PAM < 65 mmHg.</p>
+</div>
+</div>
+</div>
+</div>`;
+}
+// MOTOR PRINCIPAL DE ATUALIZAÇÃO DA TELA (VANILLA RENDER)
+function renderApp() {
+// Atualiza peso no header
+document.getElementById('val-peso-global').innerText = state.peso;
+// Renderiza abas
+document.querySelectorAll('.tab-btn').forEach(btn => {
+const tab = btn.getAttribute('data-tab');
+if (tab === state.abaAtual) {
+btn.className = 'tab-btn px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 border-cyan-400 text-cyan-400';
+} else {
+btn.className = 'tab-btn px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 border-transparent text-slate-400 hover:text-slate-200' + (tab === 'ANTIBIÓTICOS' ? ' lg:hidden' : '');
+}
+});
+// Conteúdo principal
+const main = document.getElementById('main-content');
+if (state.abaAtual === 'VASOATIVOS') {
+main.innerHTML = ⁠<div class="grid gap-6 md:grid-cols-2">${drogasVasoativas.map(d => renderDrugCard(d)).join('')}</div>⁠;
+} else if (state.abaAtual === 'INOTRÓPICOS') {
+main.innerHTML = ⁠<div class="grid gap-6 md:grid-cols-2">${inotropicos.map(d => renderDrugCard(d)).join('')}</div>⁠;
+} else if (state.abaAtual === 'SEDOANALGESIA') {
+main.innerHTML = ⁠<div class="grid gap-6 md:grid-cols-2">${sedoanalgesia.map(d => renderDrugCard(d)).join('')}</div>⁠;
+} else if (state.abaAtual === 'ARRITMIA') {
+main.innerHTML = ⁠<div class="grid gap-6 md:grid-cols-2">${arritmia.map(d => renderDrugCard(d)).join('')}</div>⁠;
+} else if (state.abaAtual === 'DHE') {
+main.innerHTML = renderDheHtml();
+// Atualiza cálculo de sódio
+const naAtual = parseFloat(document.getElementById('na-atual')?.value || 115);
+const naAlvo = parseFloat(document.getElementById('na-alvo')?.value || 125);
+const act = state.peso * 0.6;
+const defNa = Math.max(0, act * (naAlvo - naAtual));
+const vazao = (defNa / 0.513) / 24;
+const elSodio = document.getElementById('dhe-sodio-res');
+if (elSodio) {
+elSodio.innerHTML = ⁠<div> <p class="text-[10px] uppercase font-bold text-slate-400">Déficit de Sódio</p> <span class="text-xl font-bold font-mono">${defNa.toFixed(0)} mEq</span> </div> <div class="text-right"> <p class="text-[10px] uppercase font-bold text-slate-400">Vazão NaCl 3% (24h)</p> <span class="text-2xl font-bold font-mono">${vazao.toFixed(1)} mL/h</span> </div>⁠;
+}
+} else if (state.abaAtual === 'ANTIBIÓTICOS') {
+main.innerHTML = renderAntibioticosHtml();
+} else if (state.abaAtual === 'IOT') {
+main.innerHTML = renderIotHtml();
+}
+// Painel lateral de ATB (Desktop)
+const side = document.getElementById('side-atb-container');
+if (state.abaAtual !== 'IOT' && state.abaAtual !== 'ANTIBIÓTICOS') {
+side.classList.remove('hidden');
+side.innerHTML = renderAntibioticosHtml();
+} else {
+side.classList.add('hidden');
+}
+}
+// HANDLERS E EVENTOS DO USUÁRIO
+function setTab(tab) {
+state.abaAtual = tab;
+renderApp();
+window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function setDiluicao(id, key) {
+state.drogas[id].dilKey = key;
+renderApp();
+}
+function handleDoseChange(id, val) {
+state.drogas[id].dose = parseFloat(val);
+renderApp();
+}
+function setDoseDirect(id, val) {
+state.drogas[id].dose = parseFloat(val);
+renderApp();
+}
+function handleMlhChange(id, val) {
+const todas = [...drogasVasoativas, ...inotropicos, ...sedoanalgesia, ...arritmia, ...dheDrogas];
+const d = todas.find(x => x.id === id);
+const dil = d.diluicoes[state.drogas[id].dilKey];
+state.drogas[id].dose = calcDoseFromMlh(d, parseFloat(val), state.peso, dil.conc);
+renderApp();
+}
+function setClearance(val) {
+state.clearance = val;
+renderApp();
+}
+function setFiltroCat(val) {
+state.filtroCat = val;
+renderApp();
+}
+function toggleModalCrCl(open) {
+const m = document.getElementById('modal-crcl');
+if (open) m.classList.remove('hidden'), m.classList.add('flex');
+else m.classList.add('hidden'), m.classList.remove('flex');
+}
+function setSexoBiologico(s) {
+state.crclSexo = s;
+document.getElementById('btn-sexo-m').className = s === 'M' ? 'flex-1 py-1.5 text-xs font-semibold rounded bg-cyan-600 text-white' : 'flex-1 py-1.5 text-xs font-semibold rounded text-slate-400';
+document.getElementById('btn-sexo-f').className = s === 'F' ? 'flex-1 py-1.5 text-xs font-semibold rounded bg-pink-600 text-white' : 'flex-1 py-1.5 text-xs font-semibold rounded text-slate-400';
+}
+function aplicarCrCl() {
+let cg = ((140 - state.crclIdade) * state.peso) / (72 * state.crclCr);
+if (state.crclSexo === 'F') cg *= 0.85;
+if (cg >= 50) state.clearance = '>50';
+else if (cg >= 10) state.clearance = '10-50';
+else state.clearance = '<10';
+toggleModalCrCl(false);
+renderApp();
+}
+// BINDING DE SLIDERS DO MODAL E DO PESO
+document.getElementById('slider-peso').addEventListener('input', (e) => {
+state.peso = parseFloat(e.target.value);
+renderApp();
+});
+document.getElementById('crcl-cr').addEventListener('input', (e) => {
+state.crclCr = parseFloat(e.target.value);
+document.getElementById('crcl-cr-val').innerText = ⁠${state.crclCr.toFixed(1)} mg/dL⁠;
+});
+document.getElementById('crcl-idade').addEventListener('input', (e) => {
+state.crclIdade = parseInt(e.target.value);
+document.getElementById('crcl-idade-val').innerText = ⁠${state.crclIdade} anos⁠;
+});
+// INICIALIZAÇÃO IMEDIATA
+initDrogasState();
+renderApp();
+</script>
 </body>
 </html>
