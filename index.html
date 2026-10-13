@@ -1,708 +1,1438 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Calculadora UTI V19.3 - RHP</title>
-<!-- Tailwind CSS (Apenas para estilos visuais) -->
-<script src="https://cdn.tailwindcss.com"></script>
-<style>
-body {
-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-background-color: #0f172a;
-color: #f1f5f9;
--webkit-tap-highlight-color: transparent;
-}
-.custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
-.custom-scrollbar::-webkit-scrollbar-track { background: #1e293b; border-radius: 4px; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
-.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #64748b; }
-.scrollbar-hide::-webkit-scrollbar { display: none; }
-.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-input[type=range] {
--webkit-appearance: none;
-width: 100%;
-background: transparent;
-}
-input[type=range]::-webkit-slider-thumb {
--webkit-appearance: none;
-height: 18px;
-width: 18px;
-border-radius: 50%;
-background: #ffffff;
-cursor: pointer;
-margin-top: -6px;
-box-shadow: 0 0 4px rgba(0,0,0,0.5);
-}
-input[type=range]::-webkit-slider-runnable-track {
-width: 100%;
-height: 6px;
-cursor: pointer;
-border-radius: 3px;
-background: #334155;
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Calculadora UTI - RHP</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --bg-body: #0b1120;
+            --bg-card: #151f32;
+            --bg-subcard: #0d1527;
+            --border-color: #26354f;
+            --border-light: #334466;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --text-dim: #64748b;
+            --cyan: #38bdf8;
+            --blue: #3b82f6;
+            --emerald: #10b981;
+            --amber: #f59e0b;
+            --rose: #f43f5e;
+            --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.4;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        header {
+            background-color: #111a2e;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+        .header-inner {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 12px 16px 8px;
+        }
+        .top-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .app-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--cyan);
+            letter-spacing: -0.02em;
+        }
+        .app-badge {
+            font-size: 0.65rem;
+            font-family: var(--font-mono);
+            background-color: var(--bg-subcard);
+            color: var(--text-muted);
+            padding: 3px 8px;
+            border-radius: 9999px;
+            border: 1px solid var(--border-color);
+        }
+
+        .weight-control {
+            background-color: var(--bg-subcard);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 10px 14px;
+        }
+        .weight-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 4px;
+        }
+        .weight-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+        }
+        .weight-display {
+            font-family: var(--font-mono);
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--cyan);
+        }
+        .weight-unit {
+            font-size: 0.85rem;
+            font-weight: 400;
+            color: var(--text-dim);
+        }
+
+        input[type=range] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            background: transparent;
+            cursor: pointer;
+            margin: 6px 0;
+        }
+        input[type=range]:focus { outline: none; }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #202e48;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            height: 18px;
+            width: 18px;
+            border-radius: 50%;
+            background: var(--cyan);
+            margin-top: -6px;
+            box-shadow: 0 0 8px rgba(56, 189, 248, 0.6);
+            border: 2px solid #0f172a;
+        }
+
+        .tabs-nav {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            overflow-x: auto;
+            border-top: 1px solid rgba(38, 53, 79, 0.6);
+            padding: 0 12px;
+            scrollbar-width: none;
+        }
+        .tabs-nav::-webkit-scrollbar { display: none; }
+        .tab-btn {
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: var(--text-muted);
+            padding: 10px 14px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .tab-btn:hover { color: var(--text-main); }
+        .tab-btn.active {
+            color: var(--cyan);
+            border-bottom-color: var(--cyan);
+        }
+
+        main {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 16px;
+            padding-bottom: 60px;
+            width: 100%;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        @media (min-width: 1024px) {
+            main {
+                flex-direction: row;
+                align-items: flex-start;
+            }
+        }
+        .content-area { flex: 1; width: 100%; }
+        .side-area {
+            display: none;
+            width: 440px;
+            flex-shrink: 0;
+            border-left: 1px solid var(--border-color);
+            padding-left: 20px;
+            position: sticky;
+            top: 160px;
+            max-height: calc(100vh - 180px);
+            overflow-y: auto;
+        }
+        @media (min-width: 1024px) {
+            .side-area { display: block; }
+            .tab-btn[data-tab="ANTIBIÓTICOS"] { display: none; }
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+        @media (min-width: 768px) {
+            .cards-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        .drug-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        .card-header {
+            padding: 6px 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.65rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            background-color: rgba(21, 31, 50, 0.8);
+            border-bottom: 1px solid var(--border-color);
+        }
+        .card-body {
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            gap: 10px;
+        }
+        .drug-name {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .dilution-switch {
+            display: flex;
+            gap: 4px;
+            background-color: var(--bg-subcard);
+            padding: 3px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+        .dilution-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 5px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .dilution-btn.active {
+            background-color: var(--blue);
+            color: #fff;
+        }
+
+        .dilution-info {
+            background-color: rgba(13, 21, 39, 0.6);
+            border: 1px solid var(--border-color);
+            padding: 8px 10px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+        }
+        .dilution-text {
+            color: var(--cyan);
+            font-family: var(--font-mono);
+            font-weight: 600;
+            font-size: 0.72rem;
+        }
+        .dilution-sub {
+            color: var(--text-dim);
+            font-size: 0.65rem;
+            margin-top: 2px;
+        }
+
+        .dosage-box {
+            background-color: var(--bg-subcard);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: auto;
+        }
+        .dosage-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+        .quick-buttons {
+            display: flex;
+            gap: 4px;
+            margin-top: 4px;
+            flex-wrap: wrap;
+        }
+        .quick-btn {
+            background-color: #1e2c45;
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            font-size: 0.65rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .quick-btn:hover { background-color: #2b3d5d; color: #fff; }
+        .val-big {
+            font-family: var(--font-mono);
+            font-size: 1.4rem;
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        .alert-box {
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            line-height: 1.3;
+            background-color: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            color: #fbbf24;
+        }
+        .alert-box.danger {
+            background-color: rgba(244, 63, 94, 0.1);
+            border-color: rgba(244, 63, 94, 0.3);
+            color: #fda4af;
+        }
+
+        .atb-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .atb-filters {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            position: sticky;
+            top: 155px;
+            z-index: 20;
+        }
+        .atb-filter-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        select, input[type=number], input[type=text] {
+            background-color: var(--bg-subcard);
+            border: 1px solid var(--border-light);
+            color: var(--text-main);
+            padding: 6px 8px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            outline: none;
+            width: 100%;
+        }
+        .calc-btn {
+            background-color: #1e2c45;
+            border: 1px solid var(--border-light);
+            color: var(--cyan);
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .atb-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 12px;
+        }
+        .atb-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 6px;
+        }
+        .atb-name { font-size: 0.9rem; font-weight: 700; color: #fff; }
+        .atb-class {
+            font-size: 0.6rem;
+            background-color: var(--bg-subcard);
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+        .atb-dose-box {
+            background-color: rgba(13, 21, 39, 0.8);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            border-radius: 8px;
+            padding: 8px 10px;
+            margin-top: 4px;
+        }
+        .atb-dose-txt {
+            font-size: 0.85rem;
+            font-weight: 800;
+            color: var(--cyan);
+        }
+        .atb-amp-txt {
+            display: block;
+            font-size: 0.7rem;
+            font-family: var(--font-mono);
+            color: var(--emerald);
+            margin-top: 3px;
+        }
+        .atb-info {
+            font-size: 0.65rem;
+            color: var(--text-dim);
+            margin-top: 6px;
+            border-top: 1px solid rgba(38, 53, 79, 0.4);
+            padding-top: 4px;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0,0,0,0.75);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal-box {
+            background-color: #17233a;
+            border: 1px solid var(--border-light);
+            border-radius: 14px;
+            max-width: 420px;
+            width: 100%;
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+        }
+        .modal-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+        }
+        .modal-title { font-weight: 700; font-size: 0.95rem; color: #fff; }
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--text-dim);
+            font-size: 1.4rem;
+            cursor: pointer;
+            line-height: 1;
+        }
+        .sex-toggle {
+            display: flex;
+            background-color: var(--bg-subcard);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 2px;
+        }
+        .sex-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-dim);
+            padding: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .sex-btn.active { background-color: var(--cyan); color: #000; }
+        .btn-apply {
+            background-color: var(--blue);
+            color: #fff;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 0.85rem;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+
+        .calc-panel {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .calc-panel-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .metric-box {
+            background-color: rgba(16, 185, 129, 0.08);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            padding: 12px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .color-baixa { color: #60a5fa; }
+        .color-padrao { color: #34d399; }
+        .color-alta { color: #fbbf24; }
+        .color-teto { color: #f87171; }
+    </style>
 </head>
-<body class="flex flex-col min-h-screen custom-scrollbar">
-<!-- HEADER GLOBAL -->
-<header class="bg-slate-800 border-b border-slate-700 sticky top-0 z-40 shadow-md shrink-0">
-<div class="max-w-[1400px] mx-auto p-4 pb-2">
-<div class="flex items-center justify-between mb-4">
-<div class="flex items-center gap-2">
-<svg class="text-cyan-400 w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-<h1 class="text-xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
-Calculadora UTI
-</h1>
-</div>
-<span class="text-xs text-slate-400 bg-slate-900 px-2 py-1 rounded-full border border-slate-700">v19.3 Vanilla JS RHP</span>
-</div>
-<!-- CONTROLE DE PESO GLOBAL -->
-<div class="bg-slate-900/50 p-4 rounded-xl border border-slate-700">
-<div class="flex justify-between items-end mb-2">
-<label class="text-sm font-semibold text-slate-300">Peso do Paciente</label>
-<span class="text-2xl font-mono text-cyan-400"><span id="val-peso-global">60</span> <span class="text-sm text-slate-500">kg</span></span>
-</div>
-<input type="range" id="slider-peso" min="30" max="150" value="60" class="w-full h-2 rounded-lg appearance-none cursor-pointer">
-</div>
-</div>
-<!-- NAVEGAÇÃO POR ABAS -->
-<div class="max-w-[1400px] mx-auto px-4 flex overflow-x-auto scrollbar-hide border-t border-slate-700/50" id="tabs-container">
-<button onclick="setTab('VASOATIVOS')" data-tab="VASOATIVOS" class="tab-btn px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 border-cyan-400 text-cyan-400">VASOATIVOS</button>
-<button onclick="setTab('INOTRÓPICOS')" data-tab="INOTRÓPICOS" class="tab-btn px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 border-transparent text-slate-400 hover:text-slate-200">INOTRÓPICOS</button>
-<button onclick="setTab('SEDOANALGESIA')" data-tab="SEDOANALGESIA" class="tab-btn px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 border-transparent text-slate-400 hover:text-slate-200">SEDOANALGESIA</button>
-<button onclick="setTab('ARRITMIA')" data-tab="ARRITMIA" class="tab-btn px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 border-transparent text-slate-400 hover:text-slate-200">ARRITMIA</button>
-<button onclick="setTab('DHE')" data-tab="DHE" class="tab-btn px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 border-transparent text-slate-400 hover:text-slate-200">DHE</button>
-<button onclick="setTab('ANTIBIÓTICOS')" data-tab="ANTIBIÓTICOS" class="tab-btn px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 border-transparent text-slate-400 hover:text-slate-200 lg:hidden">ANTIBIÓTICOS</button>
-<button onclick="setTab('IOT')" data-tab="IOT" class="tab-btn px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 border-transparent text-slate-400 hover:text-slate-200">IOT</button>
-</div>
-</header>
-<!-- CONTEÚDO PRINCIPAL -->
-<main class="max-w-[1400px] mx-auto p-4 pb-20 w-full flex-1 flex flex-col lg:flex-row gap-6 items-start">
-<div class="flex-1 w-full" id="main-content">
-<!-- Os cards de fármacos serão inseridos aqui via JS -->
-</div>
-<!-- PAINEL LATERAL DE ANTIBIÓTICOS (DESKTOP) -->
-<div id="side-atb-container" class="hidden lg:flex flex-col w-[420px] shrink-0 border-l border-slate-800 pl-6 sticky top-[180px] self-start max-h-[calc(100vh-200px)] overflow-y-auto custom-scrollbar pr-2">
-<!-- Painel de ATB injetado aqui -->
-</div>
-</main>
-<!-- MODAL COCKCROFT-GAULT -->
-<div id="modal-crcl" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-<div class="bg-slate-800 border border-slate-600 rounded-2xl w-full max-w-md shadow-2xl p-6 space-y-6">
-<div class="flex justify-between items-center border-b border-slate-700 pb-3">
-<h3 class="font-bold text-slate-100 flex items-center gap-2">
-<svg class="w-5 h-5 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16" y1="14" y2="18"/></svg>
-Cockcroft-Gault
-</h3>
-<button onclick="toggleModalCrCl(false)" class="text-slate-400 hover:text-white">×</button>
-</div>
-<div>
-<div class="flex justify-between text-sm text-slate-400 mb-1">
-<span>Creatinina Sérica</span>
-<span id="crcl-cr-val" class="font-bold text-slate-200">1.0 mg/dL</span>
-</div>
-<input type="range" id="crcl-cr" min="0.3" max="10.0" step="0.1" value="1.0" class="w-full">
-</div>
-<div>
-<div class="flex justify-between text-sm text-slate-400 mb-1">
-<span>Idade</span>
-<span id="crcl-idade-val" class="font-bold text-slate-200">65 anos</span>
-</div>
-<input type="range" id="crcl-idade" min="18" max="100" step="1" value="65" class="w-full">
-</div>
-<div>
-<label class="block text-sm text-slate-300 mb-2">Sexo Biológico</label>
-<div class="flex bg-slate-900 rounded p-1 border border-slate-700">
-<button id="btn-sexo-m" onclick="setSexoBiologico('M')" class="flex-1 py-1.5 text-xs font-semibold rounded bg-cyan-600 text-white">Masculino</button>
-<button id="btn-sexo-f" onclick="setSexoBiologico('F')" class="flex-1 py-1.5 text-xs font-semibold rounded text-slate-400">Feminino</button>
-</div>
-</div>
-<button onclick="aplicarCrCl()" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-xl font-bold transition shadow-lg">Aplicar na TFG</button>
-</div>
-</div>
-<!-- JAVASCRIPT NATIVO (SEM DEPENDÊNCIAS EXTERNAS) -->
-<script>
-// ESTADO GLOBAL DA APLICAÇÃO
-let state = {
-peso: 60,
-abaAtual: 'VASOATIVOS',
-clearance: '>50',
-crclIdade: 65,
-crclCr: 1.0,
-crclSexo: 'M',
-drogas: {},
-filtroCat: 'Todas'
-};
-// BASE DE DADOS OFICIAL RHP
-const drogasVasoativas = [
-{
-id: 'noradrenalina', nome: 'Noradrenalina', classe: 'VASOPRESSOR', unidade: 'mcg/kg/min',
-min: 0.01, max: 2, step: 0.01, padrao: 0.1, limites: [0.1, 0.5, 1.0], botoes: [0.05, 0.1, 0.3, 0.5],
-diluicoes: {
-simples: { nome: 'Simples', texto: '4 amp (16mg) + 234 mL SG 5%', conc: 64, via: 'CVC Preferencial' },
-rhp: { nome: 'RHP', texto: '5 amp (4mL - 1mg/mL) + 180 mL SF 0.9%', conc: 100, via: 'CVC Obrigatório' }
-},
-alertas: [
-{ doseMin: 0.3, tipo: 'warning', texto: 'Suspender dieta entérica (Risco de isquemia mesentérica).' },
-{ doseMin: 0.5, tipo: 'danger', texto: 'Dose elevada. Considerar resgate (Vasopressina).' },
-{ doseMin: 1.0, tipo: 'critical', texto: 'Choque refratário. Risco iminente de necrose digital.' }
-]
-},
-{
-id: 'adrenalina', nome: 'Adrenalina', classe: 'VASOPRESSOR', unidade: 'mcg/kg/min',
-min: 0.01, max: 0.5, step: 0.01, padrao: 0.05, limites: [0.05, 0.1, 0.3], botoes: [0.02, 0.05, 0.1, 0.2],
-diluicoes: {
-simples: { nome: 'Simples', texto: '6 amp (6mg) + 94 mL SF 0.9%', conc: 60, via: 'CVC Preferencial' },
-rhp: { nome: 'RHP', texto: '10 amp (10mg) + 90 mL SF 0.9%', conc: 100, via: 'CVC Obrigatório' }
-},
-alertas: [
-{ doseMin: 0.1, tipo: 'warning', texto: 'Efeito agonista Alfa predomina. Risco de hiperlactatemia isquêmica.' }
-]
-},
-{
-id: 'vasopressina', nome: 'Vasopressina', classe: 'VASOPRESSOR', unidade: 'UI/min',
-min: 0.01, max: 0.06, step: 0.005, padrao: 0.03, limites: [0.03, 0.04, 0.05], botoes: [0.03, 0.04],
-diluicoes: {
-simples: { nome: 'Simples', texto: '1 amp (20UI) + 100 mL SF 0.9%', conc: 0.2, via: 'CVC' },
-conc: { nome: 'Conc.', texto: '2 amp (40UI) + 100 mL SF 0.9%', conc: 0.4, via: 'CVC' }
-},
-alertas: [
-{ doseMin: 0.041, tipo: 'danger', texto: 'Doses > 0.04 UI/min aumentam risco de isquemia miocárdica/intestinal.' }
-]
-},
-{
-id: 'dopamina', nome: 'Dopamina', classe: 'VASOPRESSOR', unidade: 'mcg/kg/min',
-min: 1, max: 20, step: 0.5, padrao: 5.0, limites: [5.0, 10.0, 15.0], botoes: [2.5, 5.0, 10.0, 15.0],
-diluicoes: {
-simples: { nome: 'Simples', texto: '5 amp (250mg) + 200 mL SG 5%', conc: 1000, via: 'CVC' },
-rhp: { nome: 'RHP', texto: '10 amp (500mg) + 150 mL SF 0.9%', conc: 2000, via: 'CVC' }
-},
-alertas: [
-{ doseMin: 10.0, tipo: 'danger', texto: 'Efeito Alfa predominante. Elevado risco de taquiarritmias.' }
-]
-},
-{
-id: 'nitroglicerina', nome: 'Nitroglicerina (Tridil)', classe: 'VASODILATADOR', unidade: 'mcg/min',
-min: 5, max: 200, step: 5, padrao: 10, limites: [20, 50, 100], botoes: [10, 20, 50, 100],
-diluicoes: {
-simples: { nome: 'Padrão', texto: '1 amp (50mg) + 240 mL SG 5%', conc: 200, via: 'AVP / CVC' }
-},
-alertas: [
-{ doseMin: 0.0, tipo: 'info', texto: 'Dose independente do peso (mcg/min). Titular conforme PA.' },
-{ doseMin: 100.0, tipo: 'warning', texto: 'Doses altas. Considerar tolerância medicamentosa (taquifilaxia) se uso > 24h.' }
-]
-},
-{
-id: 'nipride', nome: 'Nitroprussiato', classe: 'VASODILATADOR', unidade: 'mcg/kg/min',
-min: 0.1, max: 10, step: 0.1, padrao: 2.0, limites: [2.0, 5.0, 8.0], botoes: [0.5, 2.0, 5.0, 10.0],
-diluicoes: {
-simples: { nome: 'Padrão', texto: '1 amp (50mg) + 248 mL SG 5%', conc: 200, via: 'CVC' }
-},
-alertas: [
-{ doseMin: 2.0, tipo: 'warning', texto: 'Risco de toxicidade por cianeto. Monitorizar gasometria.' },
-{ doseMin: 9.0, tipo: 'danger', texto: 'Dose teto permitida por no máximo 10 minutos.' }
-]
-},
-{
-id: 'azulmetileno', nome: 'Azul de Metileno 1%', classe: 'VASOPRESSOR / RESGATE', unidade: 'fixa',
-min: 1, max: 1, step: 1, padrao: 1, limites: [0, 2, 3], botoes: [],
-diluicoes: {
-simples: { nome: 'Padrão RHP', texto: '2 amp (1%) + 500 mL SF 0.9%', conc: 0, via: 'AVP / CVC' }
-},
-alertas: [
-{ doseMin: 0.0, tipo: 'info', texto: 'Infusão Única e Fixa: Independe do peso.' },
-{ doseMin: 0.0, tipo: 'warning', texto: 'Correr a solução em BIC por 6 horas (1x ao dia).' }
-]
-}
-];
-const inotropicos = [
-{
-id: 'dobutamina', nome: 'Dobutamina', classe: 'INOTRÓPICO', unidade: 'mcg/kg/min',
-min: 1, max: 20, step: 0.5, padrao: 5.0, limites: [5.0, 10.0, 15.0], botoes: [2.5, 5.0, 10.0, 15.0],
-diluicoes: {
-simples: { nome: 'Simples', texto: '1 amp (250mg) + 230 mL SG 5%', conc: 1000, via: 'AVP / CVC' },
-rhp: { nome: 'RHP', texto: '2 amp (500mg) + 210 mL SG 5%', conc: 2000, via: 'CVC Preferencial' },
-conc: { nome: 'Concentrado', texto: '2 amp (500mg) + 100 mL SG 5%', conc: 3571.4, via: 'CVC Obrigatório' }
-},
-alertas: [
-{ doseMin: 15.0, tipo: 'danger', texto: 'Benefício atinge platô. Risco excessivo de isquemia miocárdica.' }
-]
-},
-{
-id: 'milrinona', nome: 'Milrinona', classe: 'INOTRÓPICO / VASODILATADOR', unidade: 'mcg/kg/min',
-min: 0.1, max: 2.5, step: 0.01, padrao: 0.5, limites: [0.375, 0.75, 2.5], botoes: [0.25, 0.5, 0.75, 2.5],
-diluicoes: { simples: { nome: 'Padrão', texto: '2 amp (20mg) + 80 mL SF 0.9%', conc: 200, via: 'AVP / CVC' } },
-alertas: [
-{ doseMin: 0.0, tipo: 'info', texto: 'Ajuste Renal (ClCr < 30): Iniciar com 0.25 mcg/kg/min.' },
-{ doseMin: 0.76, tipo: 'danger', texto: 'Doses elevadas (>0.75) aumentam risco de arritmias ventriculares.' }
-]
-},
-{
-id: 'levo', nome: 'Levosimendana', classe: 'SENSIBILIZADOR CÁLCIO', unidade: 'mcg/kg/min',
-min: 0.05, max: 0.2, step: 0.01, padrao: 0.1, limites: [0.1, 0.15, 0.18], botoes: [0.05, 0.1, 0.2],
-diluicoes: { simples: { nome: 'Padrão', texto: '1 amp (12.5mg) + 500 mL SG 5%', conc: 25, via: 'AVP / CVC' } },
-alertas: [
-{ doseMin: 0.0, tipo: 'info', texto: 'Dose Padrão: 0.1 (24% do peso em mL/h). Manter por 24h.' },
-{ doseMin: 0.2, tipo: 'danger', texto: 'Dose máxima. Risco de hipotensão profunda (meia-vida de 80h).' }
-]
-},
-{
-id: 'deslanosideo', nome: 'Deslanosídeo (Cedilanide)', classe: 'INOTRÓPICO', unidade: 'mg/dia',
-min: 0.2, max: 2.0, step: 0.2, padrao: 0.6, limites: [0.6, 1.2, 1.6], botoes: [0.4, 0.6, 1.0, 1.6],
-diluicoes: { simples: { nome: 'Padrão', texto: 'Ampola 0,2mg/mL (2mL). EV direta ou IM.', conc: 0.2, via: 'AVP / IM' } },
-alertas: [
-{ doseMin: 0.0, tipo: 'info', texto: 'Ajuste Renal: Reduzir dose na mesma proporção da queda do ClCr.' },
-{ doseMin: 0.8, tipo: 'warning', texto: 'Digitalização rápida (1.6mg máx fracionado). Manutenção: 0.2 a 0.6 mg/dia.' }
-]
-}
-];
-const sedoanalgesia = [
-{
-id: 'fentanil', nome: 'Fentanil', classe: 'ANALGESIA', unidade: 'mcg/kg/h',
-min: 0.5, max: 10, step: 0.1, padrao: 3.0, limites: [2.0, 5.0, 8.0], botoes: [1.0, 3.0, 5.0, 10.0],
-diluicoes: {
-simples: { nome: 'Simples', texto: '2 amp (1000mcg) + 80 mL SF 0.9%', conc: 20, via: 'AVP / CVC' },
-rhp: { nome: 'RHP', texto: 'Puro (50 mcg/mL)', conc: 50, via: 'AVP / CVC' }
-},
-alertas: [{ doseMin: 5.0, tipo: 'warning', texto: 'Meia-vida contexto-sensitiva alta. Risco de íleo paralítico.' }]
-},
-{
-id: 'morfina', nome: 'Morfina Injetável', classe: 'ANALGESIA', unidade: 'mg/kg/h',
-min: 0.01, max: 0.5, step: 0.01, padrao: 0.05, limites: [0.05, 0.15, 0.3], botoes: [0.05, 0.1, 0.2, 0.5],
-diluicoes: {
-simples: { nome: 'Padrão', texto: '2 amp (20mg) + 80 mL SF 0.9%', conc: 0.2, via: 'AVP / CVC' },
-conc: { nome: 'Conc.', texto: '5 amp (50mg) + 50 mL SF 0.9%', conc: 1.0, via: 'AVP / CVC' }
-},
-alertas: [{ doseMin: 0.3, tipo: 'warning', texto: 'Infusão contínua alta. Risco de depressão respiratória.' }]
-},
-{
-id: 'midazolam', nome: 'Midazolam', classe: 'SEDAÇÃO', unidade: 'mg/kg/h',
-min: 0.05, max: 0.5, step: 0.01, padrao: 0.3, limites: [0.1, 0.3, 0.4], botoes: [0.1, 0.2, 0.3, 0.5],
-diluicoes: {
-simples: { nome: 'Simples', texto: '10 amp (150mg) + 120 mL SG 5%', conc: 1, via: 'AVP / CVC' },
-rhp: { nome: 'RHP', texto: '4 amp (200mg) + 60 mL SF 0.9%', conc: 2, via: 'AVP / CVC' }
-},
-alertas: [{ doseMin: 0.15, tipo: 'warning', texto: 'Acúmulo de metabólito ativo na disfunção renal/hepática.' }]
-},
-{
-id: 'propofol', nome: 'Propofol (Puro)', classe: 'SEDAÇÃO', unidade: 'mg/kg/h',
-min: 0.3, max: 4.5, step: 0.1, padrao: 1.5, limites: [1.5, 3.0, 4.0], botoes: [0.5, 1.5, 3.0, 4.0],
-diluicoes: { simples: { nome: 'Padrão', texto: 'Puro 1% (10 mg/mL)', conc: 10, via: 'CVC Preferencial' } },
-alertas: [{ doseMin: 4.0, tipo: 'danger', texto: 'Risco de Síndrome de Infusão do Propofol (PRIS) se > 48h.' }]
-},
-{
-id: 'tiopental', nome: 'Tiopental', classe: 'SEDAÇÃO / NEUROPROTEÇÃO', unidade: 'mg/kg/h',
-min: 1, max: 5, step: 0.5, padrao: 2.0, limites: [2.0, 3.0, 4.0], botoes: [1.0, 2.0, 3.0, 5.0],
-diluicoes: { simples: { nome: 'Padrão', texto: '1 FA (1g) + 100 mL SF 0.9%', conc: 10, via: 'CVC Obrigatório' } },
-alertas: [{ doseMin: 4.0, tipo: 'danger', texto: 'Risco elevado de hipotensão profunda, imunossupressão e acúmulo adiposo.' }]
-},
-{
-id: 'dexmed', nome: 'Dexmedetomidina', classe: 'SEDAÇÃO LEVE', unidade: 'mcg/kg/h',
-min: 0.1, max: 1.5, step: 0.1, padrao: 0.4, limites: [0.4, 0.8, 1.2], botoes: [0.2, 0.4, 0.7, 1.0],
-diluicoes: {
-simples: { nome: 'Padrão', texto: '1 amp (200mcg) + 48 mL SF 0.9%', conc: 4, via: 'AVP / CVC' },
-rhp: { nome: 'RHP', texto: '2 amp (400mcg) + 100 mL SF 0.9%', conc: 4, via: 'AVP / CVC' }
-},
-alertas: [{ doseMin: 0.8, tipo: 'warning', texto: 'Riscos hemodinâmicos superam benefício sedativo. Bradicardia frequente.' }]
-},
-{
-id: 'cetamina', nome: 'Cetamina', classe: 'ANALGESIA / DISSOCIATIVO', unidade: 'mg/kg/h',
-min: 0.1, max: 2.0, step: 0.1, padrao: 0.5, limites: [0.5, 1.0, 1.5], botoes: [0.2, 0.5, 1.0, 1.5],
-diluicoes: {
-simples: { nome: 'Padrão', texto: '1 amp (500mg) + 250 mL SF 0.9%', conc: 2, via: 'AVP / CVC' },
-rhp: { nome: 'RHP', texto: '1 FA (500mg) + 90 mL SF 0.9%', conc: 5, via: 'AVP / CVC' }
-},
-alertas: []
-},
-{
-id: 'atracurio', nome: 'Atracúrio', classe: 'BNM', unidade: 'mg/kg/h',
-min: 0.2, max: 1.0, step: 0.1, padrao: 0.4, limites: [0.4, 0.6, 0.8], botoes: [0.3, 0.4, 0.5, 0.6],
-diluicoes: { simples: { nome: 'Padrão', texto: '4 amp (200mg) + 200 mL SF 0.9%', conc: 1, via: 'AVP / CVC' } },
-alertas: [{ doseMin: 0.6, tipo: 'warning', texto: 'Eliminação por via de Hofmann (independe de ClCr ou disfunção hepática).' }]
-}
-];
-const arritmia = [
-{
-id: 'amio_manut', nome: 'Amiodarona (Manutenção)', classe: 'ANTIARRÍTMICO', unidade: 'mg/min',
-min: 0.2, max: 1.5, step: 0.1, padrao: 1.0, limites: [0.5, 1.0, 1.2], botoes: [0.5, 1.0],
-diluicoes: {
-simples: { nome: 'Padrão', texto: '6 amp (900mg) + 250 mL SG 5%', conc: 3.6, via: 'CVC Preferencial' },
-rhp: { nome: 'RHP', texto: '4 amp (600mg) + 250 mL SG 5% (Correr em 24h)', conc: 2.4, via: 'CVC' }
-},
-alertas: [{ doseMin: 1.0, tipo: 'warning', texto: 'Risco de hipotensão grave (solvente) e bradicardia.' }]
-},
-{
-id: 'xilocaina', nome: 'Xilocaína 2% sem Vasoc.', classe: 'ANTIARRÍTMICO', unidade: 'mg/min',
-min: 1.0, max: 4.0, step: 0.5, padrao: 2.0, limites: [1.0, 2.0, 3.0], botoes: [1.0, 2.0, 3.0, 4.0],
-diluicoes: { simples: { nome: 'Padrão', texto: '1 FA (1000mg) + 200 mL SG 5%', conc: 4.0, via: 'AVP / CVC' } },
-alertas: [{ doseMin: 3.0, tipo: 'warning', texto: 'Observar neurotoxicidade (parestesia, abalos, convulsão).' }]
-},
-{
-id: 'esmolol', nome: 'Esmolol', classe: 'ANTIARRÍTMICO / BB', unidade: 'mcg/kg/min',
-min: 50, max: 300, step: 10, padrao: 50, limites: [100, 200, 250], botoes: [50, 100, 200, 300],
-diluicoes: { simples: { nome: 'Padrão', texto: '1 FA (2,5g) + 240 mL SG 5%', conc: 10000, via: 'CVC Preferencial' } },
-alertas: [{ doseMin: 200.0, tipo: 'warning', texto: 'Ataque: 500 mcg/kg em 1 minuto. Monitorar hipotensão induzida.' }]
-},
-{
-id: 'magnesio', nome: 'Sulfato de Magnésio 10%', classe: 'ANTIARRÍTMICO / DHE', unidade: 'g/h',
-min: 0.5, max: 4.0, step: 0.5, padrao: 1.0, limites: [1.0, 2.0, 3.0], botoes: [0.5, 1.0, 2.0, 4.0],
-diluicoes: {
-conc20: { nome: 'SG 20mg/mL', texto: '2 amp (2g) + 100 mL SG 5%', conc: 0.02, via: 'AVP / CVC' },
-conc8: { nome: 'SG 8mg/mL', texto: '2 amp (2g) + 250 mL SG 5%', conc: 0.008, via: 'AVP / CVC' }
-},
-alertas: [{ doseMin: 1.5, tipo: 'warning', texto: 'Em Torsades de Pointes: fazer 1 a 2g em bolus de 15 minutos.' }]
-}
-];
-const dheDrogas = [
-{
-id: 'kcl_central', nome: 'Cloreto de Potássio 19,1% (CVC)', classe: 'REPOSIÇÃO K+', unidade: 'mEq/h',
-min: 5, max: 40, step: 1, padrao: 10, limites: [10, 20, 30], botoes: [10, 20, 30],
-diluicoes: { simples: { nome: 'Padrão', texto: '1 amp (25 mEq) + 250 mL SF 0.9%', conc: 0.1, via: 'CVC Exclusivo' } },
-alertas: [{ doseMin: 20.0, tipo: 'danger', texto: 'Velocidade alta. Monitorização eletrocardiográfica contínua obrigatória.' }]
-},
-{
-id: 'kcl_perif', nome: 'Cloreto de Potássio 19,1% (AVP)', classe: 'REPOSIÇÃO K+', unidade: 'mEq/h',
-min: 2, max: 15, step: 1, padrao: 5, limites: [5, 8, 10], botoes: [5, 8, 10],
-diluicoes: { simples: { nome: 'Padrão', texto: '1 amp (25 mEq) + 500 mL SF 0.9%', conc: 0.05, via: 'AVP (Máx 60mEq/L)' } },
-alertas: [{ doseMin: 10.0, tipo: 'warning', texto: 'Limite teto para veia periférica. Elevado risco de flebite química.' }]
-},
-{
-id: 'calcio_gluconato', nome: 'Gluconato de Cálcio 10%', classe: 'REPOSIÇÃO Ca2+', unidade: 'g/h',
-min: 0.5, max: 2.0, step: 0.5, padrao: 1.0, limites: [1.0, 1.5, 2.0], botoes: [0.5, 1.0, 2.0],
-diluicoes: { simples: { nome: 'Padrão', texto: '1 amp (1g) + 100 mL SG 5%', conc: 0.01, via: 'AVP / CVC' } },
-alertas: [{ doseMin: 0.0, tipo: 'info', texto: 'Infundir lentamente. Risco de necrose cutânea em caso de extravasamento periférico.' }]
-}
-];
-const antibioticos = [
-{ nome: 'Aciclovir', categoria: 'Antivirais', classe: 'Antiviral', amp: 250, diluicao: '50-100mL (SF/SG) • Infusão: 1h', via: 'AVP / CVC', obs: 'Em diálise, fazer dose após a sessão.', doses: { '>50': { val: 10, max: 800, freq: '8/8h' }, '10-50': { val: 10, max: 800, freq: '12/12h a 24/24h' }, '<10': { val: 5, max: 400, freq: '24/24h' }, 'HD': { val: 5, max: 400, freq: '24/24h (Após)' }, 'CAPD': { val: 5, max: 400, freq: '24/24h' }, 'CRRT': { val: 7.5, max: 800, freq: '24/24h' } } },
-{ nome: 'Amicacina', categoria: 'Aminoglicosídeos', classe: 'Aminoglicosídeo', amp: 500, diluicao: '100-200mL (SF/SG) • Infusão: 30-60min', via: 'AVP / CVC', obs: 'Dose calculada idealmente por Peso Ajustado.', doses: { '>50': { val: 15, max: 1500, freq: '24/24h' }, '10-50': { val: 7.5, max: 750, freq: '24/24h' }, '<10': { val: 7.5, max: 750, freq: '48/48h' }, 'HD': { val: 7.5, max: 750, freq: '48/48h (Após)' }, 'CAPD': '10 a 20mg/L dialisado perdido', 'CRRT': { val: 7.5, max: 750, freq: '24/24h' } } },
-{ nome: 'Amoxicilina-clavulanato', categoria: 'Penicilinas', classe: 'Penicilina + IBL', amp: 1000, diluicao: '50-100mL (SF) • Infusão: 3-30min', via: 'AVP / CVC', obs: 'Reforço 500mg após HD', doses: { '>50': '500mg a 1g 8/8h', '10-50': { doseFixa: 500, freq: '12/12h' }, '<10': { doseFixa: 500, freq: '24/24h' }, 'HD': { doseFixa: 500, freq: '24/24h (Após)' }, 'CAPD': { doseFixa: 250, freq: '12/12h' }, 'CRRT': 'Sem dados' } },
-{ nome: 'Ampicilina', categoria: 'Penicilinas', classe: 'Penicilina', amp: 1000, diluicao: '100mL (SF) • Infusão: 30min', via: 'AVP / CVC', doses: { '>50': '1 a 2g 6/6h', '10-50': '1 a 2g 6/6h a 12/12h', '<10': '1 a 2g 12/12h a 24/24h', 'HD': '1 a 2g 12/12h (Após)', 'CAPD': { doseFixa: 250, freq: '12/12h' }, 'CRRT': '1 a 2g 6/6h' } },
-{ nome: 'Ampicilina-sulbactam', categoria: 'Penicilinas', classe: 'Penicilina + IBL', amp: 3000, diluicao: '50-100mL (SF/SG) • Infusão: 30min', via: 'AVP / CVC', doses: { '>50': { doseFixa: 3000, freq: '6/6h' }, '10-50': '3g 8/8h a 12/12h', '<10': { doseFixa: 3000, freq: '24/24h' }, 'HD': { doseFixa: 3000, freq: '24/24h (Após)' }, 'CAPD': { doseFixa: 3000, freq: '24/24h' }, 'CRRT': '1,5g a 3g 12/12h' } },
-{ nome: 'Anfotericina B (Convencional)', categoria: 'Antifúngicos', classe: 'Antifúngico', amp: 50, diluicao: '250-500mL (SG) • Infusão: 4-6h', via: 'CVC Preferencial', obs: 'Não compatível com SF 0.9%.', doses: { '>50': { val: 1, max: 100, freq: '24/24h' }, '10-50': { val: 1, max: 100, freq: '24/24h' }, '<10': { val: 1, max: 100, freq: '24/24h' }, 'HD': { val: 1, max: 100, freq: '24/24h' }, 'CAPD': { val: 1, max: 100, freq: '24/24h' }, 'CRRT': { val: 1, max: 100, freq: '24/24h' } } },
-{ nome: 'Anfotericina B (Lipídica)', categoria: 'Antifúngicos', classe: 'Antifúngico', amp: 50, diluicao: '200-250mL (SG) • Infusão: 2h', via: 'CVC Preferencial', obs: 'Não diluir em SF 0.9%. Sem correção pela TFG.', doses: { '>50': { val: 5, max: 500, freq: '24/24h' }, '10-50': { val: 5, max: 500, freq: '24/24h' }, '<10': { val: 5, max: 500, freq: '24/24h' }, 'HD': { val: 5, max: 500, freq: '24/24h' }, 'CAPD': { val: 5, max: 500, freq: '24/24h' }, 'CRRT': { val: 5, max: 500, freq: '24/24h' } } },
-{ nome: 'Cefazolina', categoria: 'Cefalosporinas', classe: 'Cefalosporina 1ªG', amp: 1000, diluicao: '50-100mL (SF/SG) • Infusão: 30min', via: 'AVP / CVC', obs: 'Reforço 500mg a 1g após HD', doses: { '>50': '1 a 2g 8/8h', '10-50': '1 a 2g 12/12h', '<10': '1 a 2g 24/24h a 48/48h', 'HD': '1 a 2g 24/24h a 48/48h (Após)', 'CAPD': { doseFixa: 500, freq: '12/12h' }, 'CRRT': '1 a 2g 12/12h' } },
-{ nome: 'Cefepime', categoria: 'Cefalosporinas', classe: 'Cefalosporina 4ªG', amp: 1000, diluicao: '50-100mL (SF/SG) • Infusão: 3-30min', via: 'AVP / CVC', obs: 'Reforço 1g após HD', doses: { '>50': '2g 12/12h ou 1-2g 8/8h', '10-50': '1 a 2g 12/12h a 24/24h', '<10': { doseFixa: 1000, freq: '24/24h' }, 'HD': { doseFixa: 1000, freq: '24/24h (Após)' }, 'CAPD': '1 a 2g 48/48h', 'CRRT': '2g 12/12h a 24/24h' } },
-{ nome: 'Ceftazidima', categoria: 'Cefalosporinas', classe: 'Cefalosporina 3ªG', amp: 1000, diluicao: '50-100mL (SF/SG) • Infusão: 3-60min', via: 'AVP / CVC', obs: 'Reforço 1g após HD', doses: { '>50': '1 a 2g 8/8h', '10-50': '1 a 2g 12/12h a 24/24h', '<10': '2g 24/24h a 48/48h', 'HD': '2g 24/24h a 48/48h (Após)', 'CAPD': { doseFixa: 500, freq: '24/24h' }, 'CRRT': '1 a 2g 12/12h a 24/24h' } },
-{ nome: 'Ceftriaxona', categoria: 'Cefalosporinas', classe: 'Cefalosporina 3ªG', amp: 1000, diluicao: '50-100mL (SF/SG) • Infusão: 2-30min', via: 'AVP / CVC', obs: 'Excreção biliar predominante. Dose máxima 4g/dia.', doses: { '>50': '1 a 2g 12/12h a 24/24h', '10-50': '1 a 2g 12/12h a 24/24h', '<10': '1 a 2g 12/12h a 24/24h', 'HD': '1 a 2g 12/12h', 'CAPD': '1 a 2g 12/12h', 'CRRT': '1 a 2g 12/12h' } },
-{ nome: 'Ciprofloxacino', categoria: 'Quinolonas', classe: 'Quinolona', amp: 400, diluicao: 'Bag Pronta (SF/SG) • Infusão: 1h', via: 'AVP / CVC', doses: { '>50': { doseFixa: 400, freq: '12/12h' }, '10-50': { doseFixa: 200, freq: '12/12h' }, '<10': { doseFixa: 200, freq: '12/12h' }, 'HD': { doseFixa: 200, freq: '12/12h' }, 'CAPD': { doseFixa: 200, freq: '8/8h' }, 'CRRT': { doseFixa: 400, freq: '12/12h' } } },
-{ nome: 'Fluconazol', categoria: 'Antifúngicos', classe: 'Antifúngico', amp: 200, diluicao: 'Bag Pronta (SF/SG) • Infusão: 1-2h', via: 'AVP / CVC', doses: { '>50': { doseFixa: 400, freq: '24/24h' }, '10-50': 'Reduzir dose em 50%', '<10': { doseFixa: 200, freq: '24/24h' }, 'HD': { doseFixa: 400, freq: '24/24h' }, 'CAPD': 'Não usar', 'CRRT': '400-800mg 24/24h' } },
-{ nome: 'Meropenem', categoria: 'Carbapenêmicos', classe: 'Carbapenêmico', amp: 1000, diluicao: '50-250mL (SF/SG) • Infusão: 3h', via: 'AVP / CVC', obs: 'Reforço 500mg após HD', doses: { '>50': { doseFixa: 1000, freq: '8/8h' }, '10-50': { doseFixa: 1000, freq: '12/12h' }, '<10': '500mg 24/24h ou 1g 12/12h', 'HD': { doseFixa: 500, freq: '24/24h' }, 'CAPD': { doseFixa: 500, freq: '24/24h' }, 'CRRT': { doseFixa: 1000, freq: '12/12h' } } },
-{ nome: 'Piperacilina-Tazobactam', categoria: 'Penicilinas', classe: 'Penicilina + IBL', amp: 4500, diluicao: '50-100mL (SF/SG) • Infusão: 3h', via: 'AVP / CVC', doses: { '>50': { doseFixa: 4500, freq: '6/6h' }, '10-50': { doseFixa: 4500, freq: '8/8h' }, '<10': { doseFixa: 2250, freq: '8/8h' }, 'HD': { doseFixa: 2250, freq: '8/8h' }, 'CAPD': { doseFixa: 2250, freq: '8/8h' }, 'CRRT': { doseFixa: 4500, freq: '8/8h' } } },
-{ nome: 'Polimixina B', categoria: 'Outros', classe: 'Polimixina', amp: 500000, diluicao: '300-500mL (SG) • Infusão: 1 a 1.5h', via: 'CVC Preferencial', obs: 'Sem ajuste renal. Ataque: 20-25mil UI/kg.', doses: { '>50': { val: 15000, unid: 'UI', freq: '12/12h (Manut)', max: 1500000 }, '10-50': { val: 15000, unid: 'UI', freq: '12/12h (Manut)', max: 1500000 }, '<10': { val: 15000, unid: 'UI', freq: '12/12h (Manut)', max: 1500000 }, 'HD': { val: 15000, unid: 'UI', freq: '12/12h (Manut)', max: 1500000 }, 'CAPD': { val: 15000, unid: 'UI', freq: '12/12h (Manut)', max: 1500000 }, 'CRRT': { val: 15000, unid: 'UI', freq: '12/12h (Manut)', max: 1500000 } } },
-{ nome: 'Vancomicina', categoria: 'Glicopeptídeos/Lipopeptídeos', classe: 'Glicopeptídeo', amp: 500, diluicao: '100-200mL (SF/SG) • Infusão: 1-2h', via: 'CVC Preferencial', obs: 'Ataque: 25-30mg/kg sempre. Ideal dosar nível sérico.', doses: { '>50': { val: 15, max: 2000, freq: '12/12h' }, '10-50': '15mg/kg 24/24h a 96/96h', '<10': '15mg/Kg a cada 4 a 7 dias', 'HD': { val: 15, max: 2000, freq: '48/48h (Após)' }, 'CAPD': { val: 15, max: 2000, freq: '48/48h' }, 'CRRT': { val: 15, max: 2000, freq: '24/24h' } } }
-];
-// INICIALIZADOR DE FÁRMACOS
-function initDrogasState() {
-const todas = [...drogasVasoativas, ...inotropicos, ...sedoanalgesia, ...arritmia, ...dheDrogas];
-todas.forEach(d => {
-const keys = Object.keys(d.diluicoes);
-state.drogas[d.id] = {
-dose: d.padrao,
-dilKey: keys.includes('rhp') ? 'rhp' : (keys.includes('simples') ? 'simples' : keys[0])
-};
-});
-}
-// CÁLCULOS MATEMÁTICOS DE BIC
-function calcMlh(droga, dose, peso, conc) {
-if (droga.id === 'azulmetileno') return 83.3;
-if (droga.unidade === 'mcg/kg/min') return (dose * peso * 60) / conc;
-if (droga.unidade === 'mcg/min' || droga.unidade === 'UI/min' || droga.unidade === 'mg/min') return (dose * 60) / conc;
-if (droga.unidade === 'mg/kg/h' || droga.unidade === 'mcg/kg/h') return (dose * peso) / conc;
-if (droga.unidade === 'mEq/h' || droga.unidade === 'g/h') return dose / conc;
-return 0;
-}
-function calcDoseFromMlh(droga, mlh, peso, conc) {
-if (droga.id === 'azulmetileno') return droga.padrao;
-if (droga.unidade === 'mcg/kg/min') return (mlh * conc) / (peso * 60);
-if (droga.unidade === 'mcg/min' || droga.unidade === 'UI/min' || droga.unidade === 'mg/min') return (mlh * conc) / 60;
-if (droga.unidade === 'mg/kg/h' || droga.unidade === 'mcg/kg/h') return (mlh * conc) / peso;
-if (droga.unidade === 'mEq/h' || droga.unidade === 'g/h') return mlh * conc;
-return 0;
-}
-// RENDERIZADOR DE CARD DE INFUSÃO
-function renderDrugCard(d) {
-const dState = state.drogas[d.id];
-const dilObj = d.diluicoes[dState.dilKey];
-const isMgDia = d.unidade === 'mg/dia';
-const isFixed = d.unidade === 'fixa';
-const mlh = calcMlh(d, dState.dose, state.peso, dilObj.conc);
-const maxMlh = isMgDia || isFixed ? 0 : calcMlh(d, d.max, state.peso, dilObj.conc);
-// Perfil de cores
-let perfil = { txt: 'text-cyan-400', bg: 'bg-cyan-500/20', nome: 'Dose' };
-if (d.limites) {
-const [l1, l2, l3] = d.limites;
-if (dState.dose < l1) perfil = { txt: 'text-blue-400', bg: 'bg-blue-500/20', nome: 'Baixa' };
-else if (dState.dose < l2) perfil = { txt: 'text-emerald-400', bg: 'bg-emerald-500/20', nome: 'Padrão' };
-else if (dState.dose < l3) perfil = { txt: 'text-amber-400', bg: 'bg-amber-500/20', nome: 'Alta' };
-else perfil = { txt: 'text-red-500', bg: 'bg-red-500/20', nome: 'Teto' };
-}
-// Alertas
-const alertas = (d.alertas || []).filter(a => dState.dose >= a.doseMin);
-// Botoes de diluição
-const dilKeys = Object.keys(d.diluicoes);
-let dilHtml = '';
-if (dilKeys.length > 1) {
-dilHtml = ⁠<div class="flex gap-1 mb-3 bg-slate-900 p-1 rounded-lg border border-slate-700"> ${dilKeys.map(k => ⁠
-<button onclick="setDiluicao('${d.id}', '${k}')" class="flex-1 py-1.5 text-[11px] font-semibold rounded ${dState.dilKey === k ? 'bg-cyan-600 text-white' : 'text-slate-400 hover:text-slate-200'}">
-${d.diluicoes[k].nome}
-</button>
-⁠).join('')} </div>⁠;
-}
-return ⁠<div class="bg-slate-800 border border-slate-700 rounded-xl shadow-lg flex flex-col h-full overflow-hidden"> <div class="px-4 py-2 flex justify-between items-center text-xs font-bold tracking-wider uppercase border-b border-slate-700/50 ${perfil.bg}"> <span class="text-slate-300">${d.classe}</span> <span class="${perfil.txt}">${perfil.nome}</span> </div> <div class="p-4 flex flex-col flex-1"> <h3 class="font-semibold text-lg text-slate-100 mb-2">${d.nome}</h3> ${dilHtml} <div class="text-sm text-slate-400 mb-3 bg-slate-800/50 p-2 rounded border border-slate-700/50"> <div class="font-mono text-xs text-cyan-300">${dilObj.texto}</div> ${dilObj.conc > 0 ?⁠<div class="text-[10px] text-slate-500 mt-1">Conc: <strong class="text-slate-300">{dilObj.conc.toFixed(1).replace(/\\.0/, '')}</strong>￼{dilObj.via}</strong></div>` : ''}
-</div>
-<div class="bg-slate-900/50 p-3 rounded-lg border border-slate-700/50 flex flex-col gap-3 mt-auto">
-{!isMgDia && !isFixed ? `
-￼
-￼
-￼
-￼
-￼
-${(d.botoes || []).map(b => `<button onclick="setDoseDirect('${d.id}', ${b})" class="text-[10px] px-2 py-0.5 rounded border border-slate-600 bg-slate-800 text-slate-300 hover:bg-slate-700">{b}</button>⁠).join('')} </div> </div> <span class="text-2xl font-mono font-bold ${perfil.txt}">${dState.dose.toFixed(3).replace(/\\.?0+$/, '')}</span> </div> <input type="range" min="${d.min}" max="${d.max}" step="${d.step}" value="${dState.dose}" oninput="handleDoseChange('${d.id}', this.value)" class="w-full mt-2"> </div> <div class="h-px bg-slate-700/50 w-full"></div> <div> <div class="flex justify-between items-end mb-1"> <label class="text-[11px] font-medium text-slate-400">Bomba (mL/h)</label> <span class="text-2xl font-mono font-bold text-slate-100">${mlh.toFixed(1)}</span> </div> <input type="range" min="0" max="${maxMlh}" step="0.1" value="${mlh}" oninput="handleMlhChange('${d.id}', this.value)" class="w-full mt-1"> </div> ⁠ : ''}
-${isMgDia ? ⁠<div class="bg-slate-800/50 p-2 rounded-lg border border-slate-700"> <div class="flex justify-between items-end"> <label class="text-[11px] font-medium text-slate-400">Prescrever nas 24h</label> <span class="text-2xl font-mono font-bold text-emerald-400">${(dState.dose / 0.2).toFixed(1)} <span class="text-sm">Ampolas</span></span> </div> <p class="text-[10px] text-slate-500 mt-2">Corresponde a <strong class="text-emerald-300">${((dState.dose / 0.2) * 2).toFixed(1)} mL</strong> da solução. Fracionar em bolus EV lento.</p> </div>⁠ : ''}
-${isFixed ? ⁠<div class="bg-slate-800/50 p-3 rounded-lg border border-slate-700"> <div class="flex justify-between items-end"> <label class="text-[11px] font-medium text-slate-400">Vazão Fixa na BIC</label> <span class="text-2xl font-mono font-bold text-cyan-400">83.3 <span class="text-sm">mL/h</span></span> </div> <p class="text-[10px] text-slate-500 mt-2">Vazão calculada matematicamente para infundir 500 mL em exatamente 6 horas.</p> </div>⁠ : ''}
-</div>
-{alertas.length > 0 ? `
-￼
-${alertas.map(a => `<div class="text-[11px] p-2 rounded border bg-amber-950/40 border-amber-900/50 text-amber-300 leading-tight">{a.texto}</div>⁠).join('')} </div> ⁠ : ''}
-</div>
-</div>`;
-}
-// RENDERIZADOR DO PAINEL DE ANTIBIÓTICOS
-function renderAntibioticosHtml() {
-const filtrados = state.filtroCat === 'Todas'
-? antibioticos
-: antibioticos.filter(a => a.categoria === state.filtroCat);
-const cats = ['Todas', ...new Set(antibioticos.map(a => a.categoria))].sort();
-return `
-<div class="flex flex-col w-full">
-<div class="bg-slate-800 p-4 rounded-xl border border-slate-700 mb-4 sticky top-0 z-10 shadow-lg flex flex-col gap-3">
-<div class="flex justify-between items-center">
-<h2 class="text-slate-200 font-bold flex items-center gap-2">💊 Antibióticos RHP</h2>
-<button onclick="toggleModalCrCl(true)" class="bg-slate-700 hover:bg-cyan-900 border border-slate-600 px-2 py-1 rounded text-slate-300 text-xs font-semibold">Calc CrCl</button>
-</div>
-<div class="flex gap-2 items-center bg-slate-900/50 p-2 rounded-lg border border-slate-700/50">
-<span class="text-[11px] text-slate-400 uppercase font-bold">TFG:</span>
-<select onchange="setClearance(this.value)" class="flex-1 bg-slate-900 border border-slate-600 rounded p-1.5 text-cyan-400 text-xs font-bold outline-none">
-<option value=">50" ${state.clearance === '>50' ? 'selected' : ''}>> 50 mL/min</option>
-<option value="10-50" ${state.clearance === '10-50' ? 'selected' : ''}>10-50 mL/min</option>
-<option value="<10" ${state.clearance === '<10' ? 'selected' : ''}>< 10 mL/min</option>
-<option value="HD" ${state.clearance === 'HD' ? 'selected' : ''}>Hemodiálise (HD)</option>
-<option value="CAPD" ${state.clearance === 'CAPD' ? 'selected' : ''}>CAPD</option>
-<option value="CRRT" ${state.clearance === 'CRRT' ? 'selected' : ''}>CRRT</option>
-</select>
-</div>
-<select onchange="setFiltroCat(this.value)" class="w-full bg-slate-900 border border-slate-600 text-slate-200 text-sm rounded-lg p-2 outline-none">
-${cats.map(c => ⁠<option value="${c}" ${state.filtroCat === c ? 'selected' : ''}>${c}</option>⁠).join('')}
-</select>
-</div>
-<div class="space-y-4 pb-8">
-${filtrados.map(atb => {
-const doseObj = atb.doses[state.clearance];
-let doseTxt = '';
-if (!doseObj) doseTxt = 'Sem dados / Não recomendado';
-else if (typeof doseObj === 'string') doseTxt = doseObj;
-else if (doseObj.doseFixa) doseTxt = ⁠${doseObj.doseFixa}mg${doseObj.freq}⁠;
-else {
-let total = Math.round(doseObj.val * state.peso);
-if (doseObj.max && total > doseObj.max) total = doseObj.max;
-doseTxt = ⁠${total}${doseObj.unid \vert{}\vert{} 'mg'} (${doseObj.val}${doseObj.unid \vert{}\vert{} 'mg'}/kg)${doseObj.freq}⁠;
-}
-return ⁠<div class="bg-slate-800 border border-slate-700 rounded-xl p-3 shadow-sm"> <div class="flex justify-between items-start mb-1"> <h3 class="font-semibold text-sm text-slate-100">${atb.nome}</h3> <span class="text-[9px] text-slate-400 uppercase bg-slate-900 px-1.5 py-0.5 rounded border border-slate-700">${atb.classe}</span> </div> <div class="bg-slate-900/80 border border-cyan-500/30 rounded p-2.5 mt-2"> <span class="text-sm text-cyan-400 font-bold">${doseTxt}</span> </div> <div class="mt-2 text-[10px] text-slate-500 border-t border-slate-700/50 pt-2 space-y-1"> <div>${atb.diluicao || ''} • <strong class="text-rose-300">${atb.via \vert{}\vert{} ''}</strong></div>${atb.obs ?⁠<div class="text-slate-400">${atb.obs}</div>⁠ : ''} </div> </div>⁠;
-}).join('')}
-</div>
-</div>`;
-}
-// RENDERIZADOR DO PAINEL DE DHE
-function renderDheHtml() {
-return `
-<div class="space-y-6">
-<!-- SÓDIO -->
-<div class="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg relative">
-<h3 class="font-bold text-lg text-slate-100 mb-3 flex items-center gap-2">🌊 Hiponatremia (Salina 3%)</h3>
-<div class="grid grid-cols-2 gap-4 mb-4">
-<div class="bg-slate-900/50 p-3 rounded-lg border border-slate-700/50">
-<label class="text-xs text-slate-400">Na+ Atual</label>
-<input type="number" id="na-atual" value="115" onchange="renderApp()" class="w-full bg-slate-800 rounded p-1 text-white font-mono mt-1">
-</div>
-<div class="bg-slate-900/50 p-3 rounded-lg border border-slate-700/50">
-<label class="text-xs text-slate-400">Na+ Alvo Desejado</label>
-<input type="number" id="na-alvo" value="125" onchange="renderApp()" class="w-full bg-slate-800 rounded p-1 text-white font-mono mt-1">
-</div>
-</div>
-<div id="dhe-sodio-res" class="bg-emerald-950/30 border border-emerald-900/50 p-3 rounded-xl flex justify-between items-center text-emerald-400">
-<!-- Calculado dinamicamente -->
-</div>
-</div>
-<!-- CARDS DE K+ E CA2+ -->
-<div class="grid gap-6 md:grid-cols-2">
-${dheDrogas.map(d => renderDrugCard(d)).join('')}
-</div>
-</div>`;
-}
-// RENDERIZADOR DO PAINEL DE IOT
-function renderIotHtml() {
-const etomMg = (state.peso * 0.2).toFixed(0);
-const etomMl = (state.peso * 0.2 / 2).toFixed(1);
-const rocMg = (state.peso * 1.0).toFixed(0);
-const rocMl = (state.peso * 1.0 / 10).toFixed(1);
-return `
-<div class="space-y-6 max-w-3xl mx-auto">
-<div class="bg-rose-900/20 border border-rose-500/30 p-4 rounded-xl text-rose-200 shadow-lg">
-<h2 class="font-bold text-lg text-white">Sequência Rápida de Intubação (RSI) [CHOQUE]</h2>
-<p class="text-sm">Doses calculadas automaticamente para <strong class="text-rose-400">${state.peso} kg</strong>.</p>
-</div>
-<div class="grid gap-4 md:grid-cols-2">
-<div class="bg-slate-800 border-l-4 border-l-rose-500 p-4 rounded-xl space-y-4">
-<h3 class="font-bold text-rose-400">Indução Imediata</h3>
-<div class="bg-slate-900/50 p-3 rounded border border-slate-700">
-<span class="text-xs text-slate-400 block mb-1">Etomidato (0,2 mg/kg)</span>
-<div class="flex justify-between items-end">
-<span class="text-lg font-bold text-white">${etomMg} mg</span>
-<span class="text-lg font-mono text-cyan-400 font-bold bg-cyan-900/30 px-2 py-1 rounded">Seringa: ￼
-￼
-￼
-￼
-￼
-￼
-￼
-￼{rocMg} mg</span>
-<span class="text-lg font-mono text-cyan-400 font-bold bg-cyan-900/30 px-2 py-1 rounded">Seringa: ${rocMl} mL</span>
-</div>
-<span class="text-[10px] text-slate-500 block mt-1">Ampola 10 mg/mL pura</span>
-</div>
-</div>
-<div class="bg-slate-800 p-4 rounded-xl space-y-3 text-sm text-slate-300">
-<h3 class="font-bold text-amber-400">Vasopressor de Resgate (Push-Dose)</h3>
-<div class="bg-slate-900/50 p-3 rounded border border-slate-700 space-y-1 text-xs">
-<strong class="text-cyan-300">Epinefrina (10 mcg/mL):</strong>
-<p>1 mL da ampola (1mg) em 100 mL de SF. Fazer bolus de 0.5 a 2 mL (5 a 20 mcg).</p>
-</div>
-<div class="bg-slate-900/50 p-3 rounded border border-slate-700 space-y-1 text-xs">
-<strong class="text-cyan-300">Noradrenalina de Partida:</strong>
-<p>Iniciar a 0.05 mcg/kg/min antes de induzir se PAM < 65 mmHg.</p>
-</div>
-</div>
-</div>
-</div>`;
-}
-// MOTOR PRINCIPAL DE ATUALIZAÇÃO DA TELA (VANILLA RENDER)
-function renderApp() {
-// Atualiza peso no header
-document.getElementById('val-peso-global').innerText = state.peso;
-// Renderiza abas
-document.querySelectorAll('.tab-btn').forEach(btn => {
-const tab = btn.getAttribute('data-tab');
-if (tab === state.abaAtual) {
-btn.className = 'tab-btn px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 border-cyan-400 text-cyan-400';
-} else {
-btn.className = 'tab-btn px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 border-transparent text-slate-400 hover:text-slate-200' + (tab === 'ANTIBIÓTICOS' ? ' lg:hidden' : '');
-}
-});
-// Conteúdo principal
-const main = document.getElementById('main-content');
-if (state.abaAtual === 'VASOATIVOS') {
-main.innerHTML = ⁠<div class="grid gap-6 md:grid-cols-2">${drogasVasoativas.map(d => renderDrugCard(d)).join('')}</div>⁠;
-} else if (state.abaAtual === 'INOTRÓPICOS') {
-main.innerHTML = ⁠<div class="grid gap-6 md:grid-cols-2">${inotropicos.map(d => renderDrugCard(d)).join('')}</div>⁠;
-} else if (state.abaAtual === 'SEDOANALGESIA') {
-main.innerHTML = ⁠<div class="grid gap-6 md:grid-cols-2">${sedoanalgesia.map(d => renderDrugCard(d)).join('')}</div>⁠;
-} else if (state.abaAtual === 'ARRITMIA') {
-main.innerHTML = ⁠<div class="grid gap-6 md:grid-cols-2">${arritmia.map(d => renderDrugCard(d)).join('')}</div>⁠;
-} else if (state.abaAtual === 'DHE') {
-main.innerHTML = renderDheHtml();
-// Atualiza cálculo de sódio
-const naAtual = parseFloat(document.getElementById('na-atual')?.value || 115);
-const naAlvo = parseFloat(document.getElementById('na-alvo')?.value || 125);
-const act = state.peso * 0.6;
-const defNa = Math.max(0, act * (naAlvo - naAtual));
-const vazao = (defNa / 0.513) / 24;
-const elSodio = document.getElementById('dhe-sodio-res');
-if (elSodio) {
-elSodio.innerHTML = ⁠<div> <p class="text-[10px] uppercase font-bold text-slate-400">Déficit de Sódio</p> <span class="text-xl font-bold font-mono">${defNa.toFixed(0)} mEq</span> </div> <div class="text-right"> <p class="text-[10px] uppercase font-bold text-slate-400">Vazão NaCl 3% (24h)</p> <span class="text-2xl font-bold font-mono">${vazao.toFixed(1)} mL/h</span> </div>⁠;
-}
-} else if (state.abaAtual === 'ANTIBIÓTICOS') {
-main.innerHTML = renderAntibioticosHtml();
-} else if (state.abaAtual === 'IOT') {
-main.innerHTML = renderIotHtml();
-}
-// Painel lateral de ATB (Desktop)
-const side = document.getElementById('side-atb-container');
-if (state.abaAtual !== 'IOT' && state.abaAtual !== 'ANTIBIÓTICOS') {
-side.classList.remove('hidden');
-side.innerHTML = renderAntibioticosHtml();
-} else {
-side.classList.add('hidden');
-}
-}
-// HANDLERS E EVENTOS DO USUÁRIO
-function setTab(tab) {
-state.abaAtual = tab;
-renderApp();
-window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-function setDiluicao(id, key) {
-state.drogas[id].dilKey = key;
-renderApp();
-}
-function handleDoseChange(id, val) {
-state.drogas[id].dose = parseFloat(val);
-renderApp();
-}
-function setDoseDirect(id, val) {
-state.drogas[id].dose = parseFloat(val);
-renderApp();
-}
-function handleMlhChange(id, val) {
-const todas = [...drogasVasoativas, ...inotropicos, ...sedoanalgesia, ...arritmia, ...dheDrogas];
-const d = todas.find(x => x.id === id);
-const dil = d.diluicoes[state.drogas[id].dilKey];
-state.drogas[id].dose = calcDoseFromMlh(d, parseFloat(val), state.peso, dil.conc);
-renderApp();
-}
-function setClearance(val) {
-state.clearance = val;
-renderApp();
-}
-function setFiltroCat(val) {
-state.filtroCat = val;
-renderApp();
-}
-function toggleModalCrCl(open) {
-const m = document.getElementById('modal-crcl');
-if (open) m.classList.remove('hidden'), m.classList.add('flex');
-else m.classList.add('hidden'), m.classList.remove('flex');
-}
-function setSexoBiologico(s) {
-state.crclSexo = s;
-document.getElementById('btn-sexo-m').className = s === 'M' ? 'flex-1 py-1.5 text-xs font-semibold rounded bg-cyan-600 text-white' : 'flex-1 py-1.5 text-xs font-semibold rounded text-slate-400';
-document.getElementById('btn-sexo-f').className = s === 'F' ? 'flex-1 py-1.5 text-xs font-semibold rounded bg-pink-600 text-white' : 'flex-1 py-1.5 text-xs font-semibold rounded text-slate-400';
-}
-function aplicarCrCl() {
-let cg = ((140 - state.crclIdade) * state.peso) / (72 * state.crclCr);
-if (state.crclSexo === 'F') cg *= 0.85;
-if (cg >= 50) state.clearance = '>50';
-else if (cg >= 10) state.clearance = '10-50';
-else state.clearance = '<10';
-toggleModalCrCl(false);
-renderApp();
-}
-// BINDING DE SLIDERS DO MODAL E DO PESO
-document.getElementById('slider-peso').addEventListener('input', (e) => {
-state.peso = parseFloat(e.target.value);
-renderApp();
-});
-document.getElementById('crcl-cr').addEventListener('input', (e) => {
-state.crclCr = parseFloat(e.target.value);
-document.getElementById('crcl-cr-val').innerText = ⁠${state.crclCr.toFixed(1)} mg/dL⁠;
-});
-document.getElementById('crcl-idade').addEventListener('input', (e) => {
-state.crclIdade = parseInt(e.target.value);
-document.getElementById('crcl-idade-val').innerText = ⁠${state.crclIdade} anos⁠;
-});
-// INICIALIZAÇÃO IMEDIATA
-initDrogasState();
-renderApp();
-</script>
+<body>
+
+    <header>
+        <div class="header-inner">
+            <div class="top-row">
+                <div class="app-title">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                    <span>Calculadora UTI</span>
+                </div>
+                <span class="app-badge">RHP V19.5 Standalone</span>
+            </div>
+
+            <div class="weight-control">
+                <div class="weight-header">
+                    <span class="weight-label">Peso do Paciente</span>
+                    <span class="weight-display"><span id="val-peso">60</span> <span class="weight-unit">kg</span></span>
+                </div>
+                <input type="range" id="slider-peso" min="30" max="150" value="60">
+            </div>
+        </div>
+
+        <nav class="tabs-nav" id="tabs-container">
+            <button class="tab-btn active" data-tab="VASOATIVOS">VASOATIVOS</button>
+            <button class="tab-btn" data-tab="INOTRÓPICOS">INOTRÓPICOS</button>
+            <button class="tab-btn" data-tab="SEDOANALGESIA">SEDOANALGESIA</button>
+            <button class="tab-btn" data-tab="ARRITMIA">ARRITMIA</button>
+            <button class="tab-btn" data-tab="DHE">DHE</button>
+            <button class="tab-btn" data-tab="ANTIBIÓTICOS">ANTIBIÓTICOS</button>
+            <button class="tab-btn" data-tab="IOT">IOT [CHOQUE]</button>
+        </nav>
+    </header>
+
+    <main>
+        <div class="content-area" id="main-content"></div>
+        <div class="side-area" id="desktop-atb-container"></div>
+    </main>
+
+    <div class="modal-overlay" id="modal-crcl">
+        <div class="modal-box">
+            <div class="modal-top">
+                <span class="modal-title">Fórmula de Cockcroft-Gault</span>
+                <button class="close-btn" onclick="toggleModalCrCl(false)">&times;</button>
+            </div>
+            <div>
+                <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text-muted); margin-bottom:4px;">
+                    <span>Creatinina Sérica</span>
+                    <strong style="color:#fff;" id="lbl-cr">1.0 mg/dL</strong>
+                </div>
+                <input type="range" id="slider-cr" min="0.3" max="10.0" step="0.1" value="1.0">
+            </div>
+            <div>
+                <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text-muted); margin-bottom:4px;">
+                    <span>Idade do Paciente</span>
+                    <strong style="color:#fff;" id="lbl-idade">65 anos</strong>
+                </div>
+                <input type="range" id="slider-idade" min="18" max="100" step="1" value="65">
+            </div>
+            <div>
+                <label style="font-size:0.75rem; color:var(--text-muted); display:block; margin-bottom:4px;">Sexo Biológico</label>
+                <div class="sex-toggle">
+                    <button class="sex-btn active" id="btn-sex-m" onclick="setSex('M')">Masculino</button>
+                    <button class="sex-btn" id="btn-sex-f" onclick="setSex('F')">Feminino</button>
+                </div>
+            </div>
+            <button class="btn-apply" onclick="aplicarCrCl()">Aplicar Faixa de Clearance</button>
+        </div>
+    </div>
+
+    <script>
+        const state = {
+            peso: 60,
+            aba: 'VASOATIVOS',
+            clearance: '>50',
+            filtroCat: 'Todas',
+            drogas: {},
+            crclCr: 1.0,
+            crclIdade: 65,
+            crclSexo: 'M',
+            naAtual: 115,
+            naAlvo: 125,
+            bicTipo: 'db',
+            baseExcess: -10,
+            bicAtual: 12,
+            bicAlvo: 18
+        };
+
+        const drogasVasoativas = [
+            { 
+                id: 'noradrenalina', nome: 'Noradrenalina', classe: 'VASOPRESSOR', unidade: 'mcg/kg/min', 
+                min: 0.01, max: 2, step: 0.01, padrao: 0.1, limites: [0.1, 0.5, 1.0], botoes: [0.05, 0.1, 0.3, 0.5],
+                diluicoes: {
+                    simples: { nome: 'Simples', texto: '4 amp (16mg) + 234 mL SG 5%', conc: 64, via: 'CVC Preferencial' },
+                    rhp: { nome: 'RHP', texto: '5 amp (4mL - 1mg/mL) + 180 mL SF 0.9%', conc: 100, via: 'CVC Obrigatório' }
+                },
+                alertas: [
+                    { doseMin: 0.3, tipo: 'warning', texto: 'Suspender dieta entérica (Risco de isquemia mesentérica).' },
+                    { doseMin: 0.5, tipo: 'danger', texto: 'Dose elevada. Considerar resgate (Vasopressina).' },
+                    { doseMin: 1.0, tipo: 'danger', texto: 'Choque refratário. Risco iminente de necrose digital.' }
+                ]
+            },
+            { 
+                id: 'adrenalina', nome: 'Adrenalina', classe: 'VASOPRESSOR', unidade: 'mcg/kg/min', 
+                min: 0.01, max: 0.5, step: 0.01, padrao: 0.05, limites: [0.05, 0.1, 0.3], botoes: [0.02, 0.05, 0.1, 0.2],
+                diluicoes: {
+                    simples: { nome: 'Simples', texto: '6 amp (6mg) + 94 mL SF 0.9%', conc: 60, via: 'CVC Preferencial' },
+                    rhp: { nome: 'RHP', texto: '10 amp (10mg) + 90 mL SF 0.9%', conc: 100, via: 'CVC Obrigatório' }
+                },
+                alertas: [
+                    { doseMin: 0.1, tipo: 'warning', texto: 'Efeito agonista Alfa predomina. Risco de hiperlactatemia isquêmica.' }
+                ]
+            },
+            { 
+                id: 'vasopressina', nome: 'Vasopressina', classe: 'VASOPRESSOR', unidade: 'UI/min', 
+                min: 0.01, max: 0.06, step: 0.005, padrao: 0.03, limites: [0.03, 0.04, 0.05], botoes: [0.03, 0.04],
+                diluicoes: {
+                    simples: { nome: 'Simples', texto: '1 amp (20UI) + 100 mL SF 0.9%', conc: 0.2, via: 'CVC' },
+                    conc: { nome: 'Conc.', texto: '2 amp (40UI) + 100 mL SF 0.9%', conc: 0.4, via: 'CVC' }
+                },
+                alertas: [
+                    { doseMin: 0.041, tipo: 'danger', texto: 'Doses > 0.04 UI/min aumentam risco de isquemia miocárdica e mesentérica.' }
+                ]
+            },
+            { 
+                id: 'dopamina', nome: 'Dopamina', classe: 'VASOPRESSOR', unidade: 'mcg/kg/min', 
+                min: 1, max: 20, step: 0.5, padrao: 5.0, limites: [5.0, 10.0, 15.0], botoes: [2.5, 5.0, 10.0, 15.0],
+                diluicoes: {
+                    simples: { nome: 'Simples', texto: '5 amp (250mg) + 200 mL SG 5%', conc: 1000, via: 'CVC' },
+                    rhp: { nome: 'RHP', texto: '10 amp (500mg) + 150 mL SF 0.9%', conc: 2000, via: 'CVC' }
+                },
+                alertas: [
+                    { doseMin: 10.0, tipo: 'danger', texto: 'Efeito Alfa predominante. Elevado risco de taquiarritmias.' }
+                ]
+            },
+            { 
+                id: 'nitroglicerina', nome: 'Nitroglicerina (Tridil)', classe: 'VASODILATADOR', unidade: 'mcg/min', 
+                min: 5, max: 200, step: 5, padrao: 10, limites: [20, 50, 100], botoes: [10, 20, 50, 100],
+                diluicoes: {
+                    simples: { nome: 'Padrão', texto: '1 amp (50mg) + 240 mL SG 5%', conc: 200, via: 'AVP / CVC' }
+                },
+                alertas: [
+                    { doseMin: 0.0, tipo: 'info', texto: 'Dose independente do peso (mcg/min). Titular conforme PA.' },
+                    { doseMin: 100.0, tipo: 'warning', texto: 'Doses altas. Considerar tolerância medicamentosa (taquifilaxia) se uso > 24h.' }
+                ]
+            },
+            { 
+                id: 'nipride', nome: 'Nitroprussiato', classe: 'VASODILATADOR', unidade: 'mcg/kg/min', 
+                min: 0.1, max: 10, step: 0.1, padrao: 2.0, limites: [2.0, 5.0, 8.0], botoes: [0.5, 2.0, 5.0, 10.0],
+                diluicoes: {
+                    simples: { nome: 'Padrão RHP', texto: '1 amp (50mg) + 248 mL SG 5%', conc: 200, via: 'CVC' }
+                },
+                alertas: [
+                    { doseMin: 2.0, tipo: 'warning', texto: 'Risco de toxicidade por cianeto. Monitorizar gasometria.' },
+                    { doseMin: 9.0, tipo: 'danger', texto: 'Dose teto permitida por no máximo 10 minutos.' }
+                ]
+            },
+            { 
+                id: 'azulmetileno', nome: 'Azul de Metileno 1%', classe: 'VASOPRESSOR / RESGATE', unidade: 'fixa', 
+                min: 1, max: 1, step: 1, padrao: 1, limites: [0, 2, 3], botoes: [],
+                diluicoes: {
+                    simples: { nome: 'Padrão RHP', texto: '2 amp (1%) + 500 mL SF 0.9%', conc: 0, via: 'AVP / CVC' }
+                },
+                alertas: [
+                    { doseMin: 0.0, tipo: 'info', texto: 'Infusão Única e Fixa: Independe do peso.' },
+                    { doseMin: 0.0, tipo: 'warning', texto: 'Correr a solução em BIC por 6 horas (1x ao dia).' }
+                ]
+            }
+        ];
+
+        const inotropicos = [
+            { 
+                id: 'dobutamina', nome: 'Dobutamina', classe: 'INOTRÓPICO', unidade: 'mcg/kg/min', 
+                min: 1, max: 20, step: 0.5, padrao: 5.0, limites: [5.0, 10.0, 15.0], botoes: [2.5, 5.0, 10.0, 15.0],
+                diluicoes: {
+                    simples: { nome: 'Padrão', texto: '1 amp (250mg) + 230 mL SG 5%', conc: 1000, via: 'AVP / CVC' },
+                    rhp: { nome: 'RHP', texto: '2 amp (500mg) + 210 mL SG 5%', conc: 2000, via: 'CVC Preferencial' },
+                    conc: { nome: 'Concentrado', texto: '2 amp (500mg) + 100 mL SG 5%', conc: 3571.4, via: 'CVC Obrigatório' }
+                },
+                alertas: [
+                    { doseMin: 15.0, tipo: 'danger', texto: 'Benefício atinge platô. Risco excessivo de isquemia miocárdica.' }
+                ]
+            },
+            { 
+                id: 'milrinona', nome: 'Milrinona', classe: 'INOTRÓPICO / VASODILATADOR', unidade: 'mcg/kg/min', 
+                min: 0.1, max: 2.5, step: 0.01, padrao: 0.5, limites: [0.375, 0.75, 2.5], botoes: [0.25, 0.5, 0.75, 2.5],
+                diluicoes: { simples: { nome: 'Padrão', texto: '2 amp (20mg) + 80 mL SF 0.9%', conc: 200, via: 'AVP / CVC' } },
+                alertas: [
+                    { doseMin: 0.0, tipo: 'info', texto: 'Ajuste Renal (ClCr < 30): Iniciar com 0.25 mcg/kg/min.' },
+                    { doseMin: 0.76, tipo: 'danger', texto: 'Doses elevadas (>0.75) aumentam risco de arritmias ventriculares.' }
+                ]
+            },
+            { 
+                id: 'levo', nome: 'Levosimendana', classe: 'SENSIBILIZADOR CÁLCIO', unidade: 'mcg/kg/min', 
+                min: 0.05, max: 0.2, step: 0.01, padrao: 0.1, limites: [0.1, 0.15, 0.18], botoes: [0.05, 0.1, 0.2],
+                diluicoes: { simples: { nome: 'Padrão', texto: '1 amp (12.5mg) + 500 mL SG 5%', conc: 25, via: 'AVP / CVC' } },
+                alertas: [
+                    { doseMin: 0.0, tipo: 'info', texto: 'Dose Padrão: 0.1 (24% do peso em mL/h). Manter por 24h.' },
+                    { doseMin: 0.2, tipo: 'danger', texto: 'Dose máxima. Risco de hipotensão profunda (meia-vida de 80h).' }
+                ]
+            },
+            { 
+                id: 'deslanosideo', nome: 'Deslanosídeo (Cedilanide)', classe: 'INOTRÓPICO', unidade: 'mg/dia', 
+                min: 0.2, max: 2.0, step: 0.2, padrao: 0.6, limites: [0.6, 1.2, 1.6], botoes: [0.4, 0.6, 1.0, 1.6],
+                diluicoes: { simples: { nome: 'Padrão', texto: 'Ampola 0,2mg/mL (2mL). EV direta ou IM.', conc: 0.2, via: 'AVP / IM' } },
+                alertas: [
+                    { doseMin: 0.0, tipo: 'info', texto: 'Ajuste Renal: Reduzir dose na mesma proporção da queda do ClCr.' },
+                    { doseMin: 0.8, tipo: 'warning', texto: 'Digitalização rápida (1.6mg máx fracionado). Manutenção: 0.2 a 0.6 mg/dia.' }
+                ]
+            }
+        ];
+
+        const sedoanalgesia = [
+            { 
+                id: 'fentanil', nome: 'Fentanil', classe: 'ANALGESIA', unidade: 'mcg/kg/h', 
+                min: 0.5, max: 10, step: 0.1, padrao: 3.0, limites: [2.0, 5.0, 8.0], botoes: [1.0, 3.0, 5.0, 10.0],
+                diluicoes: {
+                    simples: { nome: 'Simples', texto: '2 amp (1000mcg) + 80 mL SF 0.9%', conc: 20, via: 'AVP / CVC' },
+                    rhp: { nome: 'RHP', texto: 'Puro (50 mcg/mL)', conc: 50, via: 'AVP / CVC' }
+                },
+                alertas: [{ doseMin: 5.0, tipo: 'warning', texto: 'Meia-vida contexto-sensitiva alta. Risco de íleo paralítico.' }]
+            },
+            { 
+                id: 'morfina', nome: 'Morfina Injetável', classe: 'ANALGESIA', unidade: 'mg/kg/h', 
+                min: 0.01, max: 0.5, step: 0.01, padrao: 0.05, limites: [0.05, 0.15, 0.3], botoes: [0.05, 0.1, 0.2, 0.5],
+                diluicoes: {
+                    simples: { nome: 'Padrão', texto: '2 amp (20mg) + 80 mL SF 0.9%', conc: 0.2, via: 'AVP / CVC' },
+                    conc: { nome: 'Conc.', texto: '5 amp (50mg) + 50 mL SF 0.9%', conc: 1.0, via: 'AVP / CVC' }
+                },
+                alertas: [{ doseMin: 0.3, tipo: 'warning', texto: 'Infusão contínua alta. Risco de depressão respiratória.' }]
+            },
+            { 
+                id: 'midazolam', nome: 'Midazolam', classe: 'SEDAÇÃO', unidade: 'mg/kg/h', 
+                min: 0.05, max: 0.5, step: 0.01, padrao: 0.3, limites: [0.1, 0.3, 0.4], botoes: [0.1, 0.2, 0.3, 0.5],
+                diluicoes: {
+                    simples: { nome: 'Simples', texto: '10 amp (150mg) + 120 mL SG 5%', conc: 1, via: 'AVP / CVC' },
+                    rhp: { nome: 'RHP', texto: '4 amp (200mg) + 60 mL SF 0.9%', conc: 2, via: 'AVP / CVC' }
+                },
+                alertas: [{ doseMin: 0.15, tipo: 'warning', texto: 'Acúmulo de metabólito ativo na disfunção renal/hepática.' }]
+            },
+            { 
+                id: 'propofol', nome: 'Propofol (Puro)', classe: 'SEDAÇÃO', unidade: 'mg/kg/h', 
+                min: 0.3, max: 4.5, step: 0.1, padrao: 1.5, limites: [1.5, 3.0, 4.0], botoes: [0.5, 1.5, 3.0, 4.0],
+                diluicoes: { simples: { nome: 'Padrão', texto: 'Puro 1% (10 mg/mL)', conc: 10, via: 'CVC Preferencial' } },
+                alertas: [{ doseMin: 4.0, tipo: 'danger', texto: 'Risco de Síndrome de Infusão do Propofol (PRIS) se > 48h.' }]
+            },
+            { 
+                id: 'tiopental', nome: 'Tiopental', classe: 'SEDAÇÃO / NEUROPROTEÇÃO', unidade: 'mg/kg/h', 
+                min: 1, max: 5, step: 0.5, padrao: 2.0, limites: [2.0, 3.0, 4.0], botoes: [1.0, 2.0, 3.0, 5.0],
+                diluicoes: { simples: { nome: 'Padrão', texto: '1 FA (1g) + 100 mL SF 0.9%', conc: 10, via: 'CVC Obrigatório' } },
+                alertas: [{ doseMin: 4.0, tipo: 'danger', texto: 'Risco de hipotensão profunda, imunossupressão e acúmulo adiposo.' }]
+            },
+            { 
+                id: 'dexmed', nome: 'Dexmedetomidina', classe: 'SEDAÇÃO LEVE', unidade: 'mcg/kg/h', 
+                min: 0.1, max: 1.5, step: 0.1, padrao: 0.4, limites: [0.4, 0.8, 1.2], botoes: [0.2, 0.4, 0.7, 1.0],
+                diluicoes: {
+                    simples: { nome: 'Padrão', texto: '1 amp (200mcg) + 48 mL SF 0.9%', conc: 4, via: 'AVP / CVC' },
+                    rhp: { nome: 'RHP', texto: '2 amp (400mcg) + 100 mL SF 0.9%', conc: 4, via: 'AVP / CVC' }
+                },
+                alertas: [{ doseMin: 0.8, tipo: 'warning', texto: 'Riscos hemodinâmicos superam benefício sedativo. Bradicardia frequente.' }]
+            },
+            { 
+                id: 'cetamina', nome: 'Cetamina', classe: 'ANALGESIA / DISSOCIATIVO', unidade: 'mg/kg/h', 
+                min: 0.1, max: 2.0, step: 0.1, padrao: 0.5, limites: [0.5, 1.0, 1.5], botoes: [0.2, 0.5, 1.0, 1.5],
+                diluicoes: {
+                    simples: { nome: 'Padrão', texto: '1 amp (500mg) + 250 mL SF 0.9%', conc: 2, via: 'AVP / CVC' },
+                    rhp: { nome: 'RHP', texto: '1 FA (500mg) + 90 mL SF 0.9%', conc: 5, via: 'AVP / CVC' }
+                },
+                alertas: []
+            },
+            { 
+                id: 'atracurio', nome: 'Atracúrio', classe: 'BNM', unidade: 'mg/kg/h', 
+                min: 0.2, max: 1.0, step: 0.1, padrao: 0.4, limites: [0.4, 0.6, 0.8], botoes: [0.3, 0.4, 0.5, 0.6],
+                diluicoes: { simples: { nome: 'Padrão', texto: '4 amp (200mg) + 200 mL SF 0.9%', conc: 1, via: 'AVP / CVC' } },
+                alertas: [{ doseMin: 0.6, tipo: 'warning', texto: 'Eliminação por via de Hofmann (independe de ClCr ou disfunção hepática).' }]
+            }
+        ];
+
+        const arritmia = [
+            { 
+                id: 'amio_manut', nome: 'Amiodarona (Manutenção)', classe: 'ANTIARRÍTMICO', unidade: 'mg/min', 
+                min: 0.2, max: 1.5, step: 0.1, padrao: 1.0, limites: [0.5, 1.0, 1.2], botoes: [0.5, 1.0],
+                diluicoes: { 
+                    simples: { nome: 'Padrão', texto: '6 amp (900mg) + 250 mL SG 5%', conc: 3.6, via: 'CVC Preferencial' },
+                    rhp: { nome: 'RHP', texto: '4 amp (600mg) + 250 mL SG 5% (Correr em 24h)', conc: 2.4, via: 'CVC' }
+                },
+                alertas: [{ doseMin: 1.0, tipo: 'warning', texto: 'Risco de hipotensão grave (solvente) e bradicardia.' }]
+            },
+            { 
+                id: 'xilocaina', nome: 'Xilocaína 2% sem Vasoc.', classe: 'ANTIARRÍTMICO', unidade: 'mg/min', 
+                min: 1.0, max: 4.0, step: 0.5, padrao: 2.0, limites: [1.0, 2.0, 3.0], botoes: [1.0, 2.0, 3.0, 4.0],
+                diluicoes: { simples: { nome: 'Padrão', texto: '1 FA (1000mg) + 200 mL SG 5%', conc: 4.0, via: 'AVP / CVC' } },
+                alertas: [{ doseMin: 3.0, tipo: 'warning', texto: 'Observar neurotoxicidade (parestesia, abalos, convulsão).' }]
+            },
+            { 
+                id: 'esmolol', nome: 'Esmolol', classe: 'ANTIARRÍTMICO / BB', unidade: 'mcg/kg/min', 
+                min: 50, max: 300, step: 10, padrao: 50, limites: [100, 200, 250], botoes: [50, 100, 200, 300],
+                diluicoes: { simples: { nome: 'Padrão', texto: '1 FA (2,5g) + 240 mL SG 5%', conc: 10000, via: 'CVC Preferencial' } },
+                alertas: [{ doseMin: 200.0, tipo: 'warning', texto: 'Ataque: 500 mcg/kg em 1 minuto. Monitorar hipotensão induzida.' }]
+            },
+            { 
+                id: 'magnesio', nome: 'Sulfato de Magnésio 10%', classe: 'ANTIARRÍTMICO / DHE', unidade: 'g/h', 
+                min: 0.5, max: 4.0, step: 0.5, padrao: 1.0, limites: [1.0, 2.0, 3.0], botoes: [0.5, 1.0, 2.0, 4.0],
+                diluicoes: { 
+                    conc20: { nome: 'SG 20mg/mL', texto: '2 amp (2g) + 100 mL SG 5%', conc: 0.02, via: 'AVP / CVC' },
+                    conc8: { nome: 'SG 8mg/mL', texto: '2 amp (2g) + 250 mL SG 5%', conc: 0.008, via: 'AVP / CVC' }
+                },
+                alertas: [{ doseMin: 1.5, tipo: 'warning', texto: 'Em Torsades de Pointes: fazer 1 a 2g em bolus de 15 minutos.' }]
+            }
+        ];
+
+        const dheDrogas = [
+            { 
+                id: 'kcl_central', nome: 'Cloreto de Potássio 19,1% (CVC)', classe: 'REPOSIÇÃO K+', unidade: 'mEq/h', 
+                min: 5, max: 40, step: 1, padrao: 10, limites: [10, 20, 30], botoes: [10, 20, 30],
+                diluicoes: { simples: { nome: 'Padrão', texto: '1 amp (25 mEq) + 250 mL SF 0.9%', conc: 0.1, via: 'CVC Exclusivo' } },
+                alertas: [{ doseMin: 20.0, tipo: 'danger', texto: 'Velocidade alta. Monitorização eletrocardiográfica contínua obrigatória.' }]
+            },
+            { 
+                id: 'kcl_perif', nome: 'Cloreto de Potássio 19,1% (AVP)', classe: 'REPOSIÇÃO K+', unidade: 'mEq/h', 
+                min: 2, max: 15, step: 1, padrao: 5, limites: [5, 8, 10], botoes: [5, 8, 10],
+                diluicoes: { simples: { nome: 'Padrão', texto: '1 amp (25 mEq) + 500 mL SF 0.9%', conc: 0.05, via: 'AVP (Máx 60mEq/L)' } },
+                alertas: [{ doseMin: 10.0, tipo: 'warning', texto: 'Limite teto para veia periférica. Elevado risco de flebite química.' }]
+            },
+            { 
+                id: 'calcio_gluconato', nome: 'Gluconato de Cálcio 10%', classe: 'REPOSIÇÃO Ca2+', unidade: 'g/h', 
+                min: 0.5, max: 2.0, step: 0.5, padrao: 1.0, limites: [1.0, 1.5, 2.0], botoes: [0.5, 1.0, 2.0],
+                diluicoes: { simples: { nome: 'Padrão', texto: '1 amp (1g) + 100 mL SG 5%', conc: 0.01, via: 'AVP / CVC' } },
+                alertas: [{ doseMin: 0.0, tipo: 'info', texto: 'Infundir lentamente. Risco de necrose cutânea em caso de extravasamento periférico.' }]
+            }
+        ];
+
+        const antibioticos = [
+            { nome: 'Aciclovir', categoria: 'Antivirais', classe: 'Antiviral', amp: 250, diluicao: '50-100mL (SF/SG/SRL) • Infusão: >=1h', via: 'AVP / CVC', obs: 'Em diálise, fazer dose após a sessão.', doses: { '>50': { val: 10, max: 800, freq: '8/8h' }, '10-50': '25-50: 10mg/kg 12/12h | 10-25: 10mg/kg 24/24h', '<10': { val: 5, max: 400, freq: '24/24h' }, 'HD': { val: 5, max: 400, freq: '24/24h (Após)' }, 'CAPD': 'ClCr < 10 (5mg/kg 24/24h)', 'CRRT': '5 a 10mg/kg 24/24h' } },
+            { nome: 'Amicacina', categoria: 'Aminoglicosídeos', classe: 'Aminoglicosídeo', amp: 500, diluicao: '100-200mL (SF/SG/SRL) • Infusão: 30-60min', via: 'AVP / CVC', obs: 'Dose calculada idealmente por Peso Ajustado.', doses: { '>50': { val: 15, max: 1500, freq: '24/24h' }, '10-50': { val: 7.5, max: 750, freq: '24/24h' }, '<10': { val: 7.5, max: 750, freq: '48/48h' }, 'HD': { val: 7.5, max: 750, freq: '48/48h (Após)' }, 'CAPD': '15 a 20mg/L dialisado perdido/dia', 'CRRT': { val: 7.5, max: 750, freq: '24/24h' } } },
+            { nome: 'Amoxicilina-clavulanato', categoria: 'Penicilinas', classe: 'Penicilina + IBL', amp: 1000, diluicao: '50-100mL (SF) • Infusão: 3-30min', via: 'AVP / CVC', obs: 'Reforço 500mg após HD', doses: { '>50': '500mg a 1g 8/8h', '10-50': { doseFixa: 500, freq: '12/12h' }, '<10': { doseFixa: 500, freq: '24/24h' }, 'HD': { doseFixa: 500, freq: '24/24h (Após)' }, 'CAPD': 'Sem dados', 'CRRT': 'Sem dados' } },
+            { nome: 'Ampicilina', categoria: 'Penicilinas', classe: 'Penicilina', amp: 1000, diluicao: '100mL (SF) • Infusão: 30min', via: 'AVP / CVC', doses: { '>50': '1 a 2g 4/4h a 6/6h', '10-50': '30-50: 1-2g 6/6h a 8/8h | 10-30: 1-2g 8/8h a 12/12h', '<10': '1 a 2g 12/12h', 'HD': '1 a 2g 12/12h (Fazer 1 dose após)', 'CAPD': { doseFixa: 250, freq: '12/12h' }, 'CRRT': '1 a 2g 6/6h' } },
+            { nome: 'Ampicilina-sulbactam', categoria: 'Penicilinas', classe: 'Penicilina + IBL', amp: 3000, diluicao: '50-100mL (SF/SG) • Infusão: 3-30min', via: 'AVP / CVC', doses: { '>50': { doseFixa: 3000, freq: '6/6h' }, '10-50': '3g 8/8h a 12/12h', '<10': { doseFixa: 3000, freq: '24/24h' }, 'HD': { doseFixa: 3000, freq: '24/24h (Após)' }, 'CAPD': { doseFixa: 3000, freq: '24/24h' }, 'CRRT': '3g 12/12h' } },
+            { nome: 'Anfotericina B (Convencional)', categoria: 'Antifúngicos', classe: 'Antifúngico', amp: 50, diluicao: '250-500mL (SG 5%) • Infusão: 4-6h', via: 'CVC Preferencial', obs: 'Incompatível com SF 0.9%. Sem correção renal.', doses: { '>50': '0,3 a 1 mg/kg 24/24h', '10-50': 'Sem correção (0,3 a 1 mg/kg)', '<10': 'Sem correção (0,3 a 1 mg/kg)', 'HD': 'Sem correção', 'CAPD': 'Sem correção', 'CRRT': 'Sem correção' } },
+            { nome: 'Anfotericina B (Lipídica)', categoria: 'Antifúngicos', classe: 'Antifúngico', amp: 50, diluicao: '200-250mL (SG 5%) • Infusão: até 2h', via: 'CVC Preferencial', obs: 'Incompatível com SF 0.9%. Sem correção renal.', doses: { '>50': '3 a 5 mg/kg 24/24h', '10-50': 'Sem correção (3 a 5 mg/kg)', '<10': 'Sem correção (3 a 5 mg/kg)', 'HD': 'Sem correção', 'CAPD': 'Sem correção', 'CRRT': 'Sem correção' } },
+            { nome: 'Anidulafungina', categoria: 'Antifúngicos', classe: 'Echinocandina', amp: 100, diluicao: '100mL (SF/SG) • Infusão: 1-2h', via: 'AVP / CVC', obs: 'Sem correção renal. Ataque 200mg no D1.', doses: { '>50': '200mg D1, após 100mg 24/24h', '10-50': 'Sem correção', '<10': 'Sem correção', 'HD': 'Sem correção', 'CAPD': 'Sem correção', 'CRRT': 'Sem correção' } },
+            { nome: 'Azitromicina', categoria: 'Macrolídeos', classe: 'Macrolídeo', amp: 500, diluicao: '250mL (SF/SG) • Infusão: 3h', via: 'AVP / CVC', obs: 'Sem correção para disfunção renal.', doses: { '>50': { doseFixa: 500, freq: '24/24h' }, '10-50': 'Sem correção (500mg 24/24h)', '<10': 'Sem correção (500mg 24/24h)', 'HD': 'Sem correção', 'CAPD': 'Sem correção', 'CRRT': 'Sem correção' } },
+            { nome: 'Caspofungina', categoria: 'Antifúngicos', classe: 'Echinocandina', amp: 50, diluicao: '100mL (SF) • Infusão: 1h', via: 'AVP / CVC', obs: 'Sem correção renal. Ataque 70mg no D1.', doses: { '>50': '70mg D1, após 50mg 24/24h', '10-50': 'Sem correção', '<10': 'Sem correção', 'HD': 'Sem correção', 'CAPD': 'Sem correção', 'CRRT': 'Sem correção' } },
+            { nome: 'Cefalotina', categoria: 'Cefalosporinas', classe: 'Cefalosporina 1ªG', amp: 1000, diluicao: '100mL (SF/SG/SRL) • Infusão: 30min', via: 'AVP / CVC', doses: { '>50': '500mg a 2g 6/6h a 4/4h', '10-50': 'ClCr 25-50: até 1,5g 6/6h | <25: 1g 6/6h', '<10': { doseFixa: 500, freq: '6/6h' }, 'HD': { doseFixa: 500, freq: '6/6h' }, 'CAPD': { doseFixa: 500, freq: '6/6h' }, 'CRRT': 'Dose habitual (1 a 2g 6/6h)' } },
+            { nome: 'Cefazolina', categoria: 'Cefalosporinas', classe: 'Cefalosporina 1ªG', amp: 1000, diluicao: '50-100mL (SF/SG/SRL) • Infusão: 30-60min', via: 'AVP / CVC', obs: 'Reforço 500mg a 1g após HD', doses: { '>50': '1 a 2g 8/8h', '10-50': '1 a 2g 12/12h', '<10': '1 a 2g 24/24h a 48/48h', 'HD': '1 a 2g 24/24h a 48/48h', 'CAPD': { doseFixa: 500, freq: '12/12h' }, 'CRRT': '1 a 2g 12/12h' } },
+            { nome: 'Cefepime', categoria: 'Cefalosporinas', classe: 'Cefalosporina 4ªG', amp: 1000, diluicao: '50-100mL (SF/SG/SRL) • Infusão: 3-30min', via: 'AVP / CVC', obs: 'Reforço 1g após HD', doses: { '>50': '2g 12/12h ou 1-2g 8/8h', '10-50': '1 a 2g 12/12h a 24/24h', '<10': { doseFixa: 1000, freq: '24/24h' }, 'HD': { doseFixa: 1000, freq: '24/24h (Após)' }, 'CAPD': '1 a 2g 48/48h', 'CRRT': '2g 12/12h a 24/24h' } },
+            { nome: 'Cefotaxima', categoria: 'Cefalosporinas', classe: 'Cefalosporina 3ªG', amp: 1000, diluicao: '50-100mL (SF/SG) • Infusão: 3-30min', via: 'AVP / CVC', obs: 'Reforço 1g após HD', doses: { '>50': '2g 8/8h a 12/12h', '10-50': '2g 12/12h a 24/24h', '<10': { doseFixa: 2000, freq: '24/24h' }, 'HD': { doseFixa: 2000, freq: '24/24h (Após)' }, 'CAPD': '500mg a 1g 24/24h', 'CRRT': '2g 12/12h a 24/24h' } },
+            { nome: 'Cefoxitina', categoria: 'Cefalosporinas', classe: 'Cefalosporina 2ªG', amp: 1000, diluicao: '50-100mL (SF/SG/SRL) • Infusão: 3-60min', via: 'AVP / CVC', doses: { '>50': { doseFixa: 2000, freq: '8/8h' }, '10-50': '2g 8/8h a 12/12h', '<10': '2g 24/24h a 48/48h', 'HD': '2g 24/24h a 48/48h', 'CAPD': { doseFixa: 1000, freq: '24/24h' }, 'CRRT': '2g 8/8h a 12/12h' } },
+            { nome: 'Ceftarolina', categoria: 'Cefalosporinas', classe: 'Cefalosporina 5ªG', amp: 600, diluicao: '50-250mL (SF/SG/SRL) • Infusão: 1h', via: 'AVP / CVC', doses: { '>50': { doseFixa: 600, freq: '12/12h' }, '10-50': '30-50: 400mg 12/12h | 15-30: 300mg 12/12h', '<10': { doseFixa: 200, freq: '12/12h' }, 'HD': { doseFixa: 200, freq: '12/12h (Após)' }, 'CAPD': 'Sem dados', 'CRRT': 'Sem dados' } },
+            { nome: 'Ceftazidima', categoria: 'Cefalosporinas', classe: 'Cefalosporina 3ªG', amp: 1000, diluicao: '50-100mL (SF/SG/SRL) • Infusão: 3-60min', via: 'AVP / CVC', obs: 'Reforço 1g após HD', doses: { '>50': { doseFixa: 2000, freq: '8/8h' }, '10-50': '2g 12/12h a 24/24h', '<10': '2g 24/24h a 48/48h', 'HD': '2g 24/24h a 48/48h (Após)', 'CAPD': { doseFixa: 500, freq: '24/24h' }, 'CRRT': { doseFixa: 2000, freq: '12/12h' } } },
+            { nome: 'Ceftriaxona', categoria: 'Cefalosporinas', classe: 'Cefalosporina 3ªG', amp: 1000, diluicao: '50-100mL (SF/SG/SRL) • Infusão: 2-30min', via: 'AVP / CVC', obs: 'Sem correção pela função renal. Dose máx 4g/dia.', doses: { '>50': '1 a 2g 12/12h a 24/24h', '10-50': 'Sem correção', '<10': 'Sem correção', 'HD': 'Sem correção', 'CAPD': 'Sem correção', 'CRRT': 'Sem correção' } },
+            { nome: 'Cefuroxima', categoria: 'Cefalosporinas', classe: 'Cefalosporina 2ªG', amp: 750, diluicao: '50-100mL (SF/SG/SRL) • Infusão: 30min', via: 'AVP / CVC', doses: { '>50': '750mg a 1,5g 8/8h', '10-50': '750mg a 1,5g 8/8h a 12/12h', '<10': '750mg a 1,5g 24/24h', 'HD': '750mg a 1,5g 24/24h (Após)', 'CAPD': '750mg a 1,5g 24/24h', 'CRRT': '750mg a 1,5g 8/8h a 12/12h' } },
+            { nome: 'Ciprofloxacino', categoria: 'Quinolonas', classe: 'Quinolona', amp: 400, diluicao: 'Bag pronta ou 50-100mL • Infusão: 1h', via: 'AVP / CVC', doses: { '>50': { doseFixa: 400, freq: '12/12h' }, '10-50': { doseFixa: 200, freq: '12/12h' }, '<10': { doseFixa: 200, freq: '12/12h' }, 'HD': { doseFixa: 200, freq: '12/12h' }, 'CAPD': { doseFixa: 200, freq: '12/12h' }, 'CRRT': { doseFixa: 400, freq: '12/12h' } } },
+            { nome: 'Claritromicina', categoria: 'Macrolídeos', classe: 'Macrolídeo', amp: 500, diluicao: '100-250mL (SF/SG) • Infusão: 1h', via: 'AVP / CVC', doses: { '>50': { doseFixa: 500, freq: '12/12h' }, '10-50': '500mg 12/12h ou 24/24h', '<10': { doseFixa: 500, freq: '24/24h' }, 'HD': { doseFixa: 500, freq: '24/24h (Após)' }, 'CAPD': { doseFixa: 500, freq: '24/24h' }, 'CRRT': { doseFixa: 500, freq: '12/12h' } } },
+            { nome: 'Clindamicina', categoria: 'Outros', classe: 'Lincosamida', amp: 600, diluicao: '50-100mL (SF/SG) • Infusão: 1h', via: 'AVP / CVC', obs: 'Sem correção pela função renal.', doses: { '>50': '600mg 8/8h a 6/6h', '10-50': 'Sem correção', '<10': 'Sem correção', 'HD': 'Sem correção', 'CAPD': 'Sem correção', 'CRRT': 'Sem correção' } },
+            { nome: 'Cloranfenicol', categoria: 'Outros', classe: 'Anfenicol', amp: 1000, diluicao: '50-100mL (SF) • Infusão: 30-60min', via: 'AVP / CVC', obs: 'Sem correção renal. Dose máxima diária: 4g.', doses: { '>50': '50 a 100mg/kg/dia (6/6h)', '10-50': 'Sem correção', '<10': 'Sem correção', 'HD': 'Sem correção', 'CAPD': 'Sem correção', 'CRRT': 'Sem correção' } },
+            { nome: 'Daptomicina', categoria: 'Glicopeptídeos/Lipopeptídeos', classe: 'Lipopeptídeo', amp: 500, diluicao: '50mL (SF) • Infusão: 30min', via: 'AVP / CVC', obs: 'Incompatível com SG. ClCr < 30: dose 48/48h.', doses: { '>50': '4 a 6 mg/kg 24/24h', '10-50': 'ClCr >=30: 24/24h | ClCr <30: 48/48h', '<10': '4 a 6 mg/kg 48/48h', 'HD': '4 a 6 mg/kg 48/48h (Após)', 'CAPD': '4 a 6 mg/kg 48/48h', 'CRRT': '4 a 6 mg/kg 24/24h' } },
+            { nome: 'Ertapenem', categoria: 'Carbapenêmicos', classe: 'Carbapenêmico', amp: 1000, diluicao: '50mL (SF) • Infusão: 30min', via: 'AVP / CVC', obs: 'Incompatível com SG. Reforço 150mg se HD < 6h.', doses: { '>50': { doseFixa: 1000, freq: '24/24h' }, '10-50': 'ClCr >=30: 1g 24/24h | ClCr <30: 500mg 24/24h', '<10': { doseFixa: 500, freq: '24/24h' }, 'HD': { doseFixa: 500, freq: '24/24h' }, 'CAPD': { doseFixa: 500, freq: '24/24h' }, 'CRRT': { doseFixa: 1000, freq: '24/24h' } } },
+            { nome: 'Fluconazol', categoria: 'Antifúngicos', classe: 'Antifúngico', amp: 200, diluicao: '50-100mL (SF/SG) • Infusão: 1-2h', via: 'AVP / CVC', obs: 'Doses fora do habitual: ClCr < 50 fazer 50%.', doses: { '>50': { doseFixa: 400, freq: '24/24h' }, '10-50': { doseFixa: 200, freq: '24/24h' }, '<10': { doseFixa: 200, freq: '24/24h' }, 'HD': { doseFixa: 400, freq: '24/24h' }, 'CAPD': { doseFixa: 200, freq: '24/24h' }, 'CRRT': '400 a 800mg 24/24h' } },
+            { nome: 'Ganciclovir', categoria: 'Antivirais', classe: 'Antiviral', amp: 500, diluicao: '50-100mL (SF/SG) • Infusão: 1h', via: 'AVP / CVC', obs: 'Profilaxia: usar metade da dose recomendada.', doses: { '>50': '>70: 5mg/kg 12/12h | 50-69: 2,5mg/kg 12/12h', '10-50': '25-49: 2,5mg/kg 24/24h | 10-24: 1,25mg/kg 24/24h', '<10': '1,25 mg/kg 48/48h', 'HD': '1,25 mg/kg 3x/semana (Após)', 'CAPD': '1,25 mg/kg 3x/semana', 'CRRT': '2,5 mg/kg 24/24h' } },
+            { nome: 'Gentamicina', categoria: 'Aminoglicosídeos', classe: 'Aminoglicosídeo', amp: 80, diluicao: '50-200mL (SF/SG) • Infusão: 30min-2h', via: 'AVP / CVC', doses: { '>50': '3 a 7 mg/kg 24/24h', '10-50': '3 a 7 mg/kg 48/48h', '<10': '1 a 3 mg/kg 24/24h', 'HD': '3 a 7 mg/kg 48/48h', 'CAPD': '3 a 4mg/L dialisado perdido/dia', 'CRRT': '1 a 3 mg/kg 24/24h' } },
+            { nome: 'Itraconazol', categoria: 'Antifúngicos', classe: 'Antifúngico', amp: 100, via: 'Oral', obs: 'Apresentação oral.', doses: { '>50': '200mg 24/24h ou 12/12h', '10-50': '200mg 24/24h ou 12/12h', '<10': { doseFixa: 200, freq: '24/24h' }, 'HD': '100mg 12/12h a 24/24h', 'CAPD': '100mg 12/12h a 24/24h', 'CRRT': '200mg 24/24h ou 12/12h' } },
+            { nome: 'Levofloxacino', categoria: 'Quinolonas', classe: 'Quinolona', amp: 500, diluicao: '100mL (SF/SG) • Infusão: 1h', via: 'AVP / CVC', doses: { '>50': { doseFixa: 750, freq: '24/24h' }, '10-50': '20-49: 750mg 48/48h | <20: 500mg 48/48h', '<10': { doseFixa: 500, freq: '48/48h' }, 'HD': { doseFixa: 500, freq: '48/48h' }, 'CAPD': { doseFixa: 500, freq: '48/48h' }, 'CRRT': '500 a 750mg 24/24h' } },
+            { nome: 'Linezolida', categoria: 'Outros', classe: 'Oxazolidinona', amp: 600, diluicao: '50-100mL (SF/SG/SRL) • Infusão: 30min-2h', via: 'AVP / CVC', obs: 'Sem correção renal. Em HD: dose habitual AD.', doses: { '>50': { doseFixa: 600, freq: '12/12h' }, '10-50': 'Sem correção', '<10': 'Sem correção', 'HD': 'Dose habitual após diálise', 'CAPD': 'Sem correção', 'CRRT': 'Sem correção' } },
+            { nome: 'Meropenem', categoria: 'Carbapenêmicos', classe: 'Carbapenêmico', amp: 1000, diluicao: '50-250mL (SF/SG) • Infusão: 3h', via: 'AVP / CVC', obs: 'Reforço 500mg após HD. Doses maiores: discutir CCIH.', doses: { '>50': { doseFixa: 1000, freq: '8/8h' }, '10-50': { doseFixa: 1000, freq: '12/12h' }, '<10': { doseFixa: 500, freq: '24/24h' }, 'HD': { doseFixa: 500, freq: '24/24h (Após)' }, 'CAPD': { doseFixa: 500, freq: '24/24h' }, 'CRRT': { doseFixa: 1000, freq: '12/12h' } } },
+            { nome: 'Metronidazol', categoria: 'Outros', classe: 'Nitroimidazólico', amp: 500, diluicao: '50-100mL (SF/SG) • Infusão: 1h', via: 'AVP / CVC', doses: { '>50': '7,5 mg/kg 6/6h', '10-50': '7,5 mg/kg 12/12h', '<10': '7,5 mg/kg 6/6h', 'HD': '7,5 mg/kg 12/12h', 'CAPD': '7,5 mg/kg 12/12h', 'CRRT': '7,5 mg/kg 6/6h' } },
+            { nome: 'Micafungina', categoria: 'Antifúngicos', classe: 'Echinocandina', amp: 100, diluicao: '100mL (SF/SG) • Infusão: 1h', via: 'AVP / CVC', obs: 'Sem correção pela função renal.', doses: { '>50': { doseFixa: 100, freq: '24/24h' }, '10-50': 'Sem correção', '<10': 'Sem correção', 'HD': 'Sem correção', 'CAPD': 'Sem correção', 'CRRT': 'Sem correção' } },
+            { nome: 'Moxifloxacino', categoria: 'Quinolonas', classe: 'Quinolona', amp: 400, diluicao: 'Sem diluição • Infusão: 1h', via: 'AVP / CVC', obs: 'Sem correção pela função renal.', doses: { '>50': { doseFixa: 400, freq: '24/24h' }, '10-50': 'Sem correção', '<10': 'Sem correção', 'HD': 'Sem correção', 'CAPD': 'Sem correção', 'CRRT': 'Sem correção' } },
+            { nome: 'Oseltamivir', categoria: 'Antivirais', classe: 'Antiviral', via: 'Oral/SNE', obs: 'Em pacientes críticos: dose dobrada por 10 dias.', doses: { '>50': '>60: 75mg 12/12h | 50-60: 30mg 12/12h', '10-50': '30-60: 30mg 12/12h | 10-30: 30mg 24/24h', '<10': { doseFixa: 30, freq: '24/24h' }, 'HD': '30mg após HD (não fazer em dias sem HD)', 'CAPD': '30mg 1x por semana (após troca)', 'CRRT': 'Sem dados' } },
+            { nome: 'Oxacilina', categoria: 'Penicilinas', classe: 'Penicilina', amp: 500, diluicao: '50-100mL (SF/SG) • Infusão: 10min-3h', via: 'CVC Preferencial', obs: 'Sem correção pela função renal.', doses: { '>50': { doseFixa: 2000, freq: '4/4h' }, '10-50': 'Sem correção', '<10': 'Sem correção', 'HD': 'Sem correção', 'CAPD': 'Sem correção', 'CRRT': 'Sem correção' } },
+            { nome: 'Penicilina Cristalina', categoria: 'Penicilinas', classe: 'Penicilina', amp: 5000000, diluicao: '50-100mL (SF/SG) • Infusão: 1-2h', via: 'AVP / CVC', doses: { '>50': '1 a 4 milhões UI 4/4h', '10-50': '1 a 4 milhões UI 8/8h', '<10': '1 a 4 milhões UI 12/12h', 'HD': '1 a 4 milhões UI 12/12h (1 dose após)', 'CAPD': '1 a 4 milhões UI 12/12h', 'CRRT': '1 a 4 milhões UI 6/6h' } },
+            { nome: 'Piperacilina-Tazobactam', categoria: 'Penicilinas', classe: 'Penicilina + IBL', amp: 4500, diluicao: '50-100mL (SF/SG) • Infusão: 3h', via: 'AVP / CVC', doses: { '>50': { doseFixa: 4500, freq: '6/6h' }, '10-50': '40-50: 4,5g 6/6h | 20-40: 4,5g 8/8h | <20: 2,25g 6/6h', '<10': { doseFixa: 2250, freq: '6/6h' }, 'HD': { doseFixa: 2250, freq: '6/6h' }, 'CAPD': { doseFixa: 2250, freq: '8/8h' }, 'CRRT': { doseFixa: 4500, freq: '8/8h' } } },
+            { nome: 'Polimixina B', categoria: 'Outros', classe: 'Polimixina', amp: 500000, diluicao: '300-500mL (SG) • Infusão: 1h a 1h30min', via: 'CVC Preferencial', obs: 'Sem correção renal. Ataque: 20-30 mil UI/kg.', doses: { '>50': '20 a 30 mil UI/kg/dia', '10-50': 'Sem correção', '<10': 'Sem correção', 'HD': 'Sem correção', 'CAPD': 'Sem correção', 'CRRT': 'Sem correção' } },
+            { nome: 'SMX-TMP', categoria: 'Outros', classe: 'Sulfonamida', amp: 400, diluicao: '125-250mL (SG) • Infusão: 1h a 1h30min', via: 'AVP / CVC', obs: 'Dose baseada no TMP. Não recomendado em ClCr < 10.', doses: { '>50': '5 a 20 mg/kg/dia (12/12h a 6/6h)', '10-50': '30-50: 5-10mg/kg/dia (12-6h) | <30: 5-10mg/kg/dia (12h)', '<10': 'Não recomendado (ou 5 a 10mg/kg 24h)', 'HD': '5 a 10 mg/kg 24/24h', 'CAPD': '5 a 10 mg/kg 24/24h', 'CRRT': '5 mg/kg 8/8h' } },
+            { nome: 'Teicoplanina', categoria: 'Glicopeptídeos/Lipopeptídeos', classe: 'Glicopeptídeo', amp: 400, diluicao: '50-100mL (SF/SG/SRL) • Infusão: 30min', via: 'AVP / CVC', obs: 'Ataque: 6-12 mg/kg 12/12h D1. Graves: 12 mg/kg.', doses: { '>50': '6 a 12 mg/kg 24/24h', '10-50': '6 a 12 mg/kg 48/48h', '<10': '6 a 12 mg/kg 72/72h', 'HD': '6 a 12 mg/kg 72/72h', 'CAPD': '6 a 12 mg/kg 72/72h', 'CRRT': '6 a 12 mg/kg 48/48h' } },
+            { nome: 'Tigeciclina', categoria: 'Outros', classe: 'Glicilciclina', amp: 50, diluicao: '50mL (SG/SRL) • Infusão: 30min', via: 'AVP / CVC', obs: 'Ataque 100mg na primeira dose. Sem correção renal.', doses: { '>50': '100mg D1, após 50mg 12/12h', '10-50': 'Sem correção', '<10': 'Sem correção', 'HD': 'Sem correção', 'CAPD': 'Sem correção', 'CRRT': 'Sem correção' } },
+            { nome: 'Vancomicina', categoria: 'Glicopeptídeos/Lipopeptídeos', classe: 'Glicopeptídeo', amp: 500, diluicao: '100mL (500mg) ou 200mL (>500mg) • Infusão: 1-2h', via: 'CVC Preferencial', obs: 'Ataque: 30 mg/kg. Ideal dosar nível sérico (vale).', doses: { '>50': { val: 15, max: 2000, freq: '12/12h' }, '10-50': { val: 15, max: 2000, freq: '24/24h' }, '<10': { val: 15, max: 2000, freq: '48/48h' }, 'HD': { val: 15, max: 2000, freq: '48/48h (Diálise diária: fazer diário)' }, 'CAPD': { val: 15, max: 2000, freq: '48/48h' }, 'CRRT': { val: 15, max: 2000, freq: '24/24h' } } },
+            { nome: 'Voriconazol', categoria: 'Antifúngicos', classe: 'Antifúngico', amp: 200, via: 'Oral', obs: 'Não recomendado uso EV se ClCr < 50 (ciclodextrina). Usar VO.', doses: { '>50': '6mg/kg 12/12h (D1), após 4mg/kg 12/12h', '10-50': 'Usar oral: 200mg 12/12h', '<10': 'Usar oral: 200mg 12/12h', 'HD': 'Usar oral: 200mg 12/12h', 'CAPD': 'Usar oral: 200mg 12/12h', 'CRRT': 'Usar oral: 4mg/kg 12/12h' } }
+        ];
+
+        function initDrogasState() {
+            const todas = [...drogasVasoativas, ...inotropicos, ...sedoanalgesia, ...arritmia, ...dheDrogas];
+            todas.forEach(d => {
+                if (!state.drogas[d.id]) {
+                    const keys = Object.keys(d.diluicoes);
+                    state.drogas[d.id] = {
+                        dose: d.padrao,
+                        dilKey: keys.includes('rhp') ? 'rhp' : (keys.includes('simples') ? 'simples' : keys[0])
+                    };
+                }
+            });
+        }
+
+        function calcMlh(droga, dose, peso, conc) {
+            if (droga.id === 'azulmetileno') return 83.3;
+            if (droga.unidade === 'mcg/kg/min') return (dose * peso * 60) / conc;
+            if (droga.unidade === 'mcg/min' || droga.unidade === 'UI/min' || droga.unidade === 'mg/min') return (dose * 60) / conc;
+            if (droga.unidade === 'mg/kg/h' || droga.unidade === 'mcg/kg/h') return (dose * peso) / conc;
+            if (droga.unidade === 'mEq/h' || droga.unidade === 'g/h') return dose / conc;
+            return 0;
+        }
+
+        function calcDoseFromMlh(droga, mlh, peso, conc) {
+            if (droga.id === 'azulmetileno') return droga.padrao;
+            if (droga.unidade === 'mcg/kg/min') return (mlh * conc) / (peso * 60);
+            if (droga.unidade === 'mcg/min' || droga.unidade === 'UI/min' || droga.unidade === 'mg/min') return (mlh * conc) / 60;
+            if (droga.unidade === 'mg/kg/h' || droga.unidade === 'mcg/kg/h') return (mlh * conc) / peso;
+            if (droga.unidade === 'mEq/h' || droga.unidade === 'g/h') return mlh * conc;
+            return 0;
+        }
+
+        function renderDrugCard(d) {
+            if (!state.drogas[d.id]) {
+                const keys = Object.keys(d.diluicoes);
+                state.drogas[d.id] = {
+                    dose: d.padrao,
+                    dilKey: keys.includes('rhp') ? 'rhp' : (keys.includes('simples') ? 'simples' : keys[0])
+                };
+            }
+            const dState = state.drogas[d.id];
+            const dilObj = d.diluicoes[dState.dilKey];
+            const isMgDia = d.unidade === 'mg/dia';
+            const isFixed = d.unidade === 'fixa';
+            const mlh = calcMlh(d, dState.dose, state.peso, dilObj.conc);
+            const maxMlh = isMgDia || isFixed ? 0 : calcMlh(d, d.max, state.peso, dilObj.conc);
+
+            let perfil = { txt: 'color-baixa', nome: 'Dose' };
+            if (d.limites) {
+                const [l1, l2, l3] = d.limites;
+                if (dState.dose < l1) perfil = { txt: 'color-baixa', nome: 'Baixa' };
+                else if (dState.dose < l2) perfil = { txt: 'color-padrao', nome: 'Padrão' };
+                else if (dState.dose < l3) perfil = { txt: 'color-alta', nome: 'Alta' };
+                else perfil = { txt: 'color-teto', nome: 'Teto' };
+            }
+
+            const alertas = (d.alertas || []).filter(a => dState.dose >= a.doseMin);
+            const dilKeys = Object.keys(d.diluicoes);
+
+            let dilHtml = '';
+            if (dilKeys.length > 1) {
+                dilHtml = `
+                <div class="dilution-switch">
+                    ${dilKeys.map(k => `
+                        <button onclick="setDiluicao('${d.id}', '${k}')" class="dilution-btn ${dState.dilKey === k ? 'active' : ''}">
+                            ${d.diluicoes[k].nome}
+                        </button>
+                    `).join('')}
+                </div>`;
+            }
+
+            return `
+            <div class="drug-card">
+                <div class="card-header">
+                    <span style="color:var(--text-muted);">${d.classe}</span>
+                    <span class="${perfil.txt}">${perfil.nome}</span>
+                </div>
+                <div class="card-body">
+                    <h3 class="drug-name">${d.nome}</h3>
+                    ${dilHtml}
+                    <div class="dilution-info">
+                        <div class="dilution-text">${dilObj.texto}</div>
+                        ${dilObj.conc > 0 ? `<div class="dilution-sub">Conc: <strong style="color:#fff;">${dilObj.conc.toFixed(1).replace(/\.0$/, '')}</strong> ${d.unidade.split('/')[0]}/mL • Via: <strong style="color:#fff;">${dilObj.via}</strong></div>` : ''}
+                    </div>
+
+                    <div class="dosage-box">
+                        ${!isMgDia && !isFixed ? `
+                            <div>
+                                <div class="dosage-row">
+                                    <div>
+                                        <label style="font-size:0.65rem; color:var(--text-muted); font-weight:700;">ALVO (${d.unidade})</label>
+                                        <div class="quick-buttons">
+                                            ${(d.botoes || []).map(b => `<button onclick="setDoseDirect('${d.id}', ${b})" class="quick-btn">${b}</button>`).join('')}
+                                        </div>
+                                    </div>
+                                    <span class="val-big ${perfil.txt}">${dState.dose.toFixed(3).replace(/\.?0+$/, '')}</span>
+                                </div>
+                                <input type="range" min="${d.min}" max="${d.max}" step="${d.step}" value="${dState.dose}" oninput="handleDoseChange('${d.id}', this.value)">
+                            </div>
+                            <div style="height:1px; background:var(--border-color); width:100%;"></div>
+                            <div>
+                                <div class="dosage-row">
+                                    <label style="font-size:0.65rem; color:var(--text-muted); font-weight:700;">BOMBA (mL/h)</label>
+                                    <span class="val-big" style="color:#fff;">${mlh.toFixed(1)}</span>
+                                </div>
+                                <input type="range" min="0" max="${maxMlh}" step="0.1" value="${mlh}" oninput="handleMlhChange('${d.id}', this.value)">
+                            </div>
+                        ` : ''}
+
+                        ${isMgDia ? `
+                            <div style="display:flex; justify-content:space-between; align-items:baseline;">
+                                <label style="font-size:0.7rem; color:var(--text-muted); font-weight:700;">PRESCREVER NAS 24h</label>
+                                <span class="val-big" style="color:var(--emerald);">${(dState.dose / 0.2).toFixed(1)} <span style="font-size:0.75rem;">Ampolas</span></span>
+                            </div>
+                            <p style="font-size:0.65rem; color:var(--text-dim); margin-top:4px;">Equivale a <strong style="color:#fff;">${((dState.dose / 0.2) * 2).toFixed(1)} mL</strong> da solução. Fracionar em bolus EV lento.</p>
+                        ` : ''}
+
+                        ${isFixed ? `
+                            <div style="display:flex; justify-content:space-between; align-items:baseline;">
+                                <label style="font-size:0.7rem; color:var(--text-muted); font-weight:700;">VAZÃO FIXA EM BIC</label>
+                                <span class="val-big" style="color:var(--cyan);">83.3 <span style="font-size:0.75rem;">mL/h</span></span>
+                            </div>
+                            <p style="font-size:0.65rem; color:var(--text-dim); margin-top:4px;">Infundir 500 mL estritamente durante 6 horas.</p>
+                        ` : ''}
+                    </div>
+
+                    ${alertas.length > 0 ? `
+                        <div style="display:flex; flex-direction:column; gap:4px; margin-top:6px;">
+                            ${alertas.map(a => `<div class="alert-box ${a.tipo === 'danger' ? 'danger' : ''}">${a.texto}</div>`).join('')}
+                        </div>
+                    ` : ''}
+                </div>
+            </div>`;
+        }
+
+        function renderAntibioticosHtml() {
+            const filtrados = state.filtroCat === 'Todas' 
+                ? antibioticos 
+                : antibioticos.filter(a => a.categoria === state.filtroCat);
+
+            const cats = ['Todas', ...new Set(antibioticos.map(a => a.categoria))].sort();
+
+            return `
+            <div class="atb-container">
+                <div class="atb-filters">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-weight:800; font-size:0.85rem; color:#fff;">Antibióticos RHP</span>
+                        <button onclick="toggleModalCrCl(true)" class="calc-btn">Calc CrCl</button>
+                    </div>
+
+                    <div class="atb-filter-row">
+                        <span style="font-size:0.7rem; color:var(--text-muted); font-weight:700;">TFG:</span>
+                        <select onchange="setClearance(this.value)">
+                            <option value=">50" ${state.clearance === '>50' ? 'selected' : ''}>> 50 mL/min</option>
+                            <option value="10-50" ${state.clearance === '10-50' ? 'selected' : ''}>10-50 mL/min</option>
+                            <option value="<10" ${state.clearance === '<10' ? 'selected' : ''}>< 10 mL/min</option>
+                            <option value="HD" ${state.clearance === 'HD' ? 'selected' : ''}>Hemodiálise (HD)</option>
+                            <option value="CAPD" ${state.clearance === 'CAPD' ? 'selected' : ''}>CAPD</option>
+                            <option value="CRRT" ${state.clearance === 'CRRT' ? 'selected' : ''}>CRRT</option>
+                        </select>
+                    </div>
+
+                    <select onchange="setFiltroCat(this.value)">
+                        ${cats.map(c => `<option value="${c}" ${state.filtroCat === c ? 'selected' : ''}>${c}</option>`).join('')}
+                    </select>
+                </div>
+
+                <div style="display:flex; flex-direction:column; gap:10px;">
+                    ${filtrados.map(atb => {
+                        const doseObj = atb.doses[state.clearance];
+                        let doseTxt = '';
+                        if (!doseObj) doseTxt = 'Sem dados / Não recomendado';
+                        else if (typeof doseObj === 'string') doseTxt = doseObj;
+                        else if (doseObj.doseFixa) doseTxt = `${doseObj.doseFixa}mg ${doseObj.freq}`;
+                        else {
+                            let total = Math.round(doseObj.val * state.peso);
+                            if (doseObj.max && total > doseObj.max) total = doseObj.max;
+                            doseTxt = `${total}${doseObj.unid || 'mg'} (${doseObj.val}${doseObj.unid || 'mg'}/kg) ${doseObj.freq}`;
+                        }
+
+                        let ampolasTxt = '';
+                        if (atb.amp && doseObj && doseObj.doseFixa) {
+                            const qtd = doseObj.doseFixa / atb.amp;
+                            ampolasTxt = `${qtd} FA de ${atb.amp}mg`;
+                        }
+
+                        return `
+                        <div class="atb-card">
+                            <div class="atb-header">
+                                <span class="atb-name">${atb.nome}</span>
+                                <span class="atb-class">${atb.classe}</span>
+                            </div>
+                            <div class="atb-dose-box">
+                                <div class="atb-dose-txt">${doseTxt}</div>
+                                ${ampolasTxt ? `<span class="atb-amp-txt">${ampolasTxt}</span>` : ''}
+                            </div>
+                            <div class="atb-info">
+                                <div>${atb.diluicao || ''} • <strong style="color:#fff;">${atb.via || ''}</strong></div>
+                                ${atb.obs ? `<div style="color:#cbd5e1; margin-top:2px;">${atb.obs}</div>` : ''}
+                            </div>
+                        </div>`;
+                    }).join('')}
+                </div>
+            </div>`;
+        }
+
+        function renderDheHtml() {
+            const act = state.peso * 0.6;
+            const defNa = Math.max(0, act * (state.naAlvo - state.naAtual));
+            const vazaoNa = (defNa / 0.513) / 24;
+            const adrogue = (513 - state.naAtual) / (act + 1);
+
+            const volDist = state.peso * 0.5;
+            let deficitBic = 0;
+            if (state.bicTipo === 'db') {
+                deficitBic = Math.abs(state.baseExcess) * volDist;
+            } else {
+                deficitBic = Math.max(0, (state.bicAlvo - state.bicAtual) * volDist);
+            }
+            const reposicaoBic = deficitBic / 2;
+
+            return `
+            <div style="display:flex; flex-direction:column; gap:16px;">
+                <div class="calc-panel">
+                    <div class="calc-panel-title">🌊 Hiponatremia (Salina 3%)</div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                        <div>
+                            <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text-muted); margin-bottom:4px;">
+                                <span>Na+ Atual</span>
+                                <strong style="color:#fff;">${state.naAtual}</strong>
+                            </div>
+                            <input type="range" min="100" max="134" value="${state.naAtual}" oninput="state.naAtual=parseFloat(this.value); renderApp();">
+                        </div>
+                        <div>
+                            <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text-muted); margin-bottom:4px;">
+                                <span>Na+ Alvo</span>
+                                <strong style="color:#fff;">${state.naAlvo}</strong>
+                            </div>
+                            <input type="range" min="110" max="140" value="${state.naAlvo}" oninput="state.naAlvo=parseFloat(this.value); renderApp();">
+                        </div>
+                    </div>
+                    <div class="metric-box">
+                        <div>
+                            <div style="font-size:0.65rem; color:var(--text-muted); font-weight:700;">DÉFICIT DE SÓDIO</div>
+                            <span class="val-big" style="color:var(--emerald);">${defNa.toFixed(0)} mEq</span>
+                        </div>
+                        <div style="text-align:right;">
+                            <div style="font-size:0.65rem; color:var(--text-muted); font-weight:700;">VAZÃO NaCl 3% (24h)</div>
+                            <span class="val-big" style="color:var(--emerald);">${vazaoNa.toFixed(1)} mL/h</span>
+                        </div>
+                    </div>
+                    <p style="font-size:0.65rem; color:var(--text-dim);">1 Litro eleva o Na+ sérico em <strong>${adrogue.toFixed(1)} mEq/L</strong> (Fórmula de Adrogué-Madias).</p>
+                </div>
+
+                <div class="cards-grid">
+                    ${dheDrogas.map(d => renderDrugCard(d)).join('')}
+                </div>
+
+                <div class="calc-panel">
+                    <div class="calc-panel-title">🧪 Reposição de Bicarbonato 8,4%</div>
+                    <div class="dilution-switch">
+                        <button onclick="state.bicTipo='db'; renderApp();" class="dilution-btn ${state.bicTipo==='db'?'active':''}">Por Déficit de Base (BE)</button>
+                        <button onclick="state.bicTipo='bic'; renderApp();" class="dilution-btn ${state.bicTipo==='bic'?'active':''}">Por Bicarbonato Alvo</button>
+                    </div>
+                    ${state.bicTipo === 'db' ? `
+                        <div>
+                            <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text-muted); margin-bottom:4px;">
+                                <span>Déficit de Base (BE)</span>
+                                <strong style="color:var(--rose); font-family:var(--font-mono);">${state.baseExcess}</strong>
+                            </div>
+                            <input type="range" min="-30" max="-2" step="1" value="${state.baseExcess}" oninput="state.baseExcess=parseFloat(this.value); renderApp();">
+                        </div>
+                    ` : `
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                            <div>
+                                <label style="font-size:0.7rem; color:var(--text-muted);">Bic. Atual</label>
+                                <input type="number" value="${state.bicAtual}" onchange="state.bicAtual=parseFloat(this.value); renderApp();">
+                            </div>
+                            <div>
+                                <label style="font-size:0.7rem; color:var(--text-muted);">Bic. Alvo</label>
+                                <input type="number" value="${state.bicAlvo}" onchange="state.bicAlvo=parseFloat(this.value); renderApp();">
+                            </div>
+                        </div>
+                    `}
+                    <div class="metric-box" style="background:rgba(56, 189, 248, 0.08); border-color:rgba(56, 189, 248, 0.25);">
+                        <div>
+                            <div style="font-size:0.65rem; color:var(--text-muted); font-weight:700;">FAZER AGORA (50% DÉFICIT)</div>
+                            <span style="font-size:0.65rem; color:var(--text-dim);">1 mEq = 1 mL Bicarbonato 8,4%</span>
+                        </div>
+                        <span class="val-big" style="color:var(--cyan);">${reposicaoBic.toFixed(0)} mL</span>
+                    </div>
+                </div>
+            </div>`;
+        }
+
+        function renderIotHtml() {
+            const etomMg = (state.peso * 0.2).toFixed(0);
+            const etomMl = (state.peso * 0.2 / 2).toFixed(1);
+            const rocMg = (state.peso * 1.0).toFixed(0);
+            const rocMl = (state.peso * 1.0 / 10).toFixed(1);
+
+            return `
+            <div style="display:flex; flex-direction:column; gap:16px;">
+                <div style="background:rgba(244, 63, 94, 0.1); border:1px solid rgba(244, 63, 94, 0.3); border-radius:10px; padding:12px;">
+                    <h3 style="color:#fff; font-size:0.95rem; font-weight:800;">Sequência Rápida de Intubação (RSI) [CHOQUE]</h3>
+                    <p style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">Doses calculadas em tempo real para <strong style="color:var(--rose);">${state.peso} kg</strong>.</p>
+                </div>
+
+                <div class="cards-grid">
+                    <div class="calc-panel" style="border-left:4px solid var(--rose);">
+                        <div class="calc-panel-title" style="color:var(--rose);">Indução Imediata</div>
+                        <div style="background:var(--bg-subcard); padding:10px; border-radius:8px; border:1px solid var(--border-color);">
+                            <span style="font-size:0.7rem; color:var(--text-muted); display:block; margin-bottom:4px;">Etomidato (0,2 mg/kg)</span>
+                            <div style="display:flex; justify-content:space-between; align-items:baseline;">
+                                <strong style="color:#fff; font-size:1.1rem;">${etomMg} mg</strong>
+                                <span class="val-big" style="color:var(--cyan); font-size:1.2rem;">Fazer ${etomMl} mL</span>
+                            </div>
+                            <span style="font-size:0.65rem; color:var(--text-dim); display:block; margin-top:2px;">Ampola pura 2 mg/mL</span>
+                        </div>
+                        <div style="background:var(--bg-subcard); padding:10px; border-radius:8px; border:1px solid var(--border-color);">
+                            <span style="font-size:0.7rem; color:var(--text-muted); display:block; margin-bottom:4px;">Rocurônio (1,0 mg/kg)</span>
+                            <div style="display:flex; justify-content:space-between; align-items:baseline;">
+                                <strong style="color:#fff; font-size:1.1rem;">${rocMg} mg</strong>
+                                <span class="val-big" style="color:var(--cyan); font-size:1.2rem;">Fazer ${rocMl} mL</span>
+                            </div>
+                            <span style="font-size:0.65rem; color:var(--text-dim); display:block; margin-top:2px;">Ampola pura 10 mg/mL</span>
+                        </div>
+                    </div>
+
+                    <div class="calc-panel" style="border-left:4px solid var(--amber);">
+                        <div class="calc-panel-title" style="color:var(--amber);">Vasopressores Push-Dose</div>
+                        <div style="background:var(--bg-subcard); padding:10px; border-radius:8px; border:1px solid var(--border-color); font-size:0.75rem;">
+                            <strong style="color:var(--cyan); display:block; margin-bottom:2px;">Epinefrina (10 mcg/mL):</strong>
+                            <p style="color:var(--text-muted);">1 mL da ampola 1mg/mL em 100 mL SF. Fazer bolus de 0.5 a 2.0 mL (5 a 20 mcg).</p>
+                        </div>
+                        <div style="background:var(--bg-subcard); padding:10px; border-radius:8px; border:1px solid var(--border-color); font-size:0.75rem;">
+                            <strong style="color:var(--cyan); display:block; margin-bottom:2px;">Efedrina (5 mg/mL):</strong>
+                            <p style="color:var(--text-muted);">Fazer bolus de 1.0 a 2.0 mL (5 a 10 mg IV direto).</p>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+        }
+
+        function renderApp() {
+            try {
+                const pesoEl = document.getElementById('val-peso');
+                if (pesoEl) pesoEl.innerText = state.peso;
+
+                document.querySelectorAll('.tab-btn').forEach(btn => {
+                    const tab = btn.getAttribute('data-tab');
+                    if (tab === state.aba) {
+                        btn.className = 'tab-btn active';
+                    } else {
+                        btn.className = 'tab-btn';
+                    }
+                });
+
+                const main = document.getElementById('main-content');
+                if (main) {
+                    if (state.aba === 'VASOATIVOS') {
+                        main.innerHTML = `<div class="cards-grid">${drogasVasoativas.map(d => renderDrugCard(d)).join('')}</div>`;
+                    } else if (state.aba === 'INOTRÓPICOS') {
+                        main.innerHTML = `<div class="cards-grid">${inotropicos.map(d => renderDrugCard(d)).join('')}</div>`;
+                    } else if (state.aba === 'SEDOANALGESIA') {
+                        main.innerHTML = `<div class="cards-grid">${sedoanalgesia.map(d => renderDrugCard(d)).join('')}</div>`;
+                    } else if (state.aba === 'ARRITMIA') {
+                        main.innerHTML = `<div class="cards-grid">${arritmia.map(d => renderDrugCard(d)).join('')}</div>`;
+                    } else if (state.aba === 'DHE') {
+                        main.innerHTML = renderDheHtml();
+                    } else if (state.aba === 'ANTIBIÓTICOS') {
+                        main.innerHTML = renderAntibioticosHtml();
+                    } else if (state.aba === 'IOT') {
+                        main.innerHTML = renderIotHtml();
+                    }
+                }
+
+                const side = document.getElementById('desktop-atb-container');
+                if (side) {
+                    if (state.aba !== 'IOT' && state.aba !== 'ANTIBIÓTICOS') {
+                        side.style.display = window.innerWidth >= 1024 ? 'block' : 'none';
+                        side.innerHTML = renderAntibioticosHtml();
+                    } else {
+                        side.style.display = 'none';
+                    }
+                }
+            } catch (err) {
+                console.error("Erro na renderização:", err);
+                const main = document.getElementById('main-content');
+                if (main) {
+                    main.innerHTML = `
+                        <div style="background:#451a03; border:1px solid #b45309; padding:20px; border-radius:10px; color:#fde68a;">
+                            <h3>Ocorreu um erro ao carregar os dados.</h3>
+                            <p style="font-size:0.8rem; margin-top:8px;">${err.message}</p>
+                        </div>`;
+                }
+            }
+        }
+
+        function setTab(tab) {
+            state.aba = tab;
+            renderApp();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function setDiluicao(id, key) {
+            if (state.drogas[id]) {
+                state.drogas[id].dilKey = key;
+                renderApp();
+            }
+        }
+
+        function handleDoseChange(id, val) {
+            if (state.drogas[id]) {
+                state.drogas[id].dose = parseFloat(val);
+                renderApp();
+            }
+        }
+
+        function setDoseDirect(id, val) {
+            if (state.drogas[id]) {
+                state.drogas[id].dose = parseFloat(val);
+                renderApp();
+            }
+        }
+
+        function handleMlhChange(id, val) {
+            const todas = [...drogasVasoativas, ...inotropicos, ...sedoanalgesia, ...arritmia, ...dheDrogas];
+            const d = todas.find(x => x.id === id);
+            if (d && state.drogas[id]) {
+                const dil = d.diluicoes[state.drogas[id].dilKey];
+                state.drogas[id].dose = calcDoseFromMlh(d, parseFloat(val), state.peso, dil.conc);
+                renderApp();
+            }
+        }
+
+        function setClearance(val) {
+            state.clearance = val;
+            renderApp();
+        }
+
+        function setFiltroCat(val) {
+            state.filtroCat = val;
+            renderApp();
+        }
+
+        function toggleModalCrCl(open) {
+            const m = document.getElementById('modal-crcl');
+            if (m) {
+                if (open) m.classList.add('open');
+                else m.classList.remove('open');
+            }
+        }
+
+        function setSex(s) {
+            state.crclSexo = s;
+            const btnM = document.getElementById('btn-sex-m');
+            const btnF = document.getElementById('btn-sex-f');
+            if (btnM && btnF) {
+                btnM.className = s === 'M' ? 'sex-btn active' : 'sex-btn';
+                btnF.className = s === 'F' ? 'sex-btn active' : 'sex-btn';
+            }
+        }
+
+        function aplicarCrCl() {
+            let cg = ((140 - state.crclIdade) * state.peso) / (72 * state.crclCr);
+            if (state.crclSexo === 'F') cg *= 0.85;
+
+            if (cg >= 50) state.clearance = '>50';
+            else if (cg >= 10) state.clearance = '10-50';
+            else state.clearance = '<10';
+
+            toggleModalCrCl(false);
+            renderApp();
+        }
+
+        function initApp() {
+            initDrogasState();
+
+            const sliderPeso = document.getElementById('slider-peso');
+            if (sliderPeso) {
+                sliderPeso.addEventListener('input', (e) => {
+                    state.peso = parseFloat(e.target.value);
+                    renderApp();
+                });
+            }
+
+            const sliderCr = document.getElementById('slider-cr');
+            if (sliderCr) {
+                sliderCr.addEventListener('input', (e) => {
+                    state.crclCr = parseFloat(e.target.value);
+                    const lbl = document.getElementById('lbl-cr');
+                    if (lbl) lbl.innerText = `${state.crclCr.toFixed(1)} mg/dL`;
+                });
+            }
+
+            const sliderIdade = document.getElementById('slider-idade');
+            if (sliderIdade) {
+                sliderIdade.addEventListener('input', (e) => {
+                    state.crclIdade = parseInt(e.target.value);
+                    const lbl = document.getElementById('lbl-idade');
+                    if (lbl) lbl.innerText = `${state.crclIdade} anos`;
+                });
+            }
+
+            const tabsContainer = document.getElementById('tabs-container');
+            if (tabsContainer) {
+                tabsContainer.addEventListener('click', (e) => {
+                    const btn = e.target.closest('.tab-btn');
+                    if (btn) setTab(btn.getAttribute('data-tab'));
+                });
+            }
+
+            window.addEventListener('resize', () => {
+                const side = document.getElementById('desktop-atb-container');
+                if (side && state.aba !== 'IOT' && state.aba !== 'ANTIBIÓTICOS') {
+                    side.style.display = window.innerWidth >= 1024 ? 'block' : 'none';
+                }
+            });
+
+            renderApp();
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initApp);
+        } else {
+            initApp();
+        }
+    </script>
 </body>
 </html>
